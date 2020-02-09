@@ -25,6 +25,7 @@ class Agent():
     def train(self, number_episodes, number_time_steps):
         #bar = Bar('Training..', max = number_episodes)
         for episode in range(number_episodes):
+            start = time.time()
             building = Building()
             episode_reward = 0
             episode_temperatures = []
@@ -49,8 +50,9 @@ class Agent():
             self.episode_rewards.append(episode_reward)
             self.temperature_evolutions.append(episode_temperatures)
             self.epsilon *= EPS_DECAY
+            end = time.time()
             if episode %100 == 0:
-                print('Just finished episode {}\n'.format(episode))
+                print('Just finished episode {} after {} seconds\n'.format(episode, end - start))
                 print('Current reward {}\n'.format(episode_reward))
             #bar.next()
         with open('q_table.pkl', 'wb') as f:

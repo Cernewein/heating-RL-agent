@@ -24,7 +24,6 @@
 #BSUB -e training_%J.err
 # -- end of LSF options --
 
-dos2unix requirements.txt
 # setup python3 env
 module load python3/3.6.2
 pip3 install --user virtualenv
