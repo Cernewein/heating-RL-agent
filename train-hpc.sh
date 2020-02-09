@@ -1,7 +1,7 @@
 #!/bin/sh
 ### General options
 ### --- specify queue --
-#BSUB -q elektro
+#BSUB -q hpc
 ### -- set the job Name --
 #BSUB -J heating-RL
 ### -- ask for number of cores (default: 1) --
@@ -24,10 +24,7 @@
 #BSUB -e training_%J.err
 # -- end of LSF options --
 
-nvidia-smi
-# Load the cuda module
-module load cuda/9.1
-
+dos2unix requirements.txt
 # setup python3 env
 module load python3/3.6.2
 pip3 install --user virtualenv

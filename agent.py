@@ -49,7 +49,16 @@ class Agent():
             self.episode_rewards.append(episode_reward)
             self.temperature_evolutions.append(episode_temperatures)
             self.epsilon *= EPS_DECAY
-        if episode %100 == 0:
-            print('Just finished episode {}'.format(episode))
+            if episode %100 == 0:
+                print('Just finished episode {}\n'.format(episode))
+                print('Current reward {}\n'.format(episode_reward))
             #bar.next()
+        with open('q_table.pkl', 'wb') as f:
+            pkl.dump(self.q_table,f)
+
+        with open('rewards.pkl', 'wb') as f:
+            pkl.dump(self.episode_rewards,f)
+
+        with open('temperatures.pkl', 'wb') as f:
+            pkl.dump(self.temperature_evolutions,f)
         #bar.finish()

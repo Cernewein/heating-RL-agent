@@ -7,7 +7,6 @@ import pickle
 import time
 from vars import *
 
-style.use('ggplot')
 
 class Building:
     def __init__(self):
