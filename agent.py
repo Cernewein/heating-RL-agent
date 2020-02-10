@@ -48,10 +48,10 @@ class Agent():
 
                 episode_reward += reward
             self.episode_rewards.append(episode_reward)
-            self.temperature_evolutions.append(episode_temperatures)
             self.epsilon *= EPS_DECAY
-            end = time.time()
             if episode %100 == 0:
+                self.temperature_evolutions.append(episode_temperatures)
+                end = time.time()
                 print('Just finished episode {} after {} seconds\n'.format(episode, end - start))
                 print('Current reward {}\n'.format(episode_reward))
             #bar.next()
@@ -64,3 +64,29 @@ class Agent():
         with open('temperatures.pkl', 'wb') as f:
             pkl.dump(self.temperature_evolutions,f)
         #bar.finish()
+
+    def basic_controller(self,number_time_steps):
+        """
+
+        :param number_time_steps:
+        :return:
+        """
+        building = Building()
+        self.temperatures = []
+        self.rewards = []
+        self.action = 0
+        for _ in range(number_time_steps):
+            if building.inside_temperature > T_MAX-1/TEMPERATURE_ROUNDING:
+                self.action = 0
+            elif building.inside_temperature < T_MIN+1/TEMPERATURE_ROUNDING:
+                self.action = 1
+                #print('taking heating action')
+            building.action(self.action)
+            self.temperatures.append(building.inside_temperature)
+            self.rewards.append(building.reward(self.action))
+
+        with open('rewards_basic.pkl', 'wb') as f:
+            pkl.dump(self.rewards,f)
+
+        with open('temperatures_basic.pkl', 'wb') as f:
+            pkl.dump(self.temperatures,f)
