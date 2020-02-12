@@ -6,6 +6,7 @@ import time
 from vars import *
 from environment import Building
 from progress.bar import Bar
+import os
 
 class Agent():
     def __init__(self, epsilon = EPSILON, start_q_table=None):
@@ -55,13 +56,13 @@ class Agent():
                 print('Just finished episode {} after {} seconds\n'.format(episode, end - start))
                 print('Current reward {}\n'.format(episode_reward))
             #bar.next()
-        with open('q_table.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + 'q_table_LR_' + LEARNING_RATE + '_G_' + DISCOUNT + '_EPS_' + EPSILON + '_.pkl', 'wb') as f:
             pkl.dump(self.q_table,f)
 
-        with open('rewards.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + 'rewards_LR_' + LEARNING_RATE + '_G_' + DISCOUNT + '_EPS_' + EPSILON + '_.pkl', 'wb') as f:
             pkl.dump(self.episode_rewards,f)
 
-        with open('temperatures.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + 'temperatures' + LEARNING_RATE + '_G_' + DISCOUNT + '_EPS_' + EPSILON + '_.pkl', 'wb') as f:
             pkl.dump(self.temperature_evolutions,f)
         #bar.finish()
 
@@ -85,8 +86,8 @@ class Agent():
             self.temperatures.append(building.inside_temperature)
             self.rewards.append(building.reward(self.action))
 
-        with open('rewards_basic.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + 'rewards_basic.pkl', 'wb') as f:
             pkl.dump(self.rewards,f)
 
-        with open('temperatures_basic.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + 'temperatures_basic.pkl', 'wb') as f:
             pkl.dump(self.temperatures,f)

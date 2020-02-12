@@ -1,12 +1,12 @@
 #### General settings
-TIME_DIVISION = 1# How many timesteps do we have in 1s? For example if we want every minute, set this to 60
-NUM_TIME_STEPS = 24*3600 # A total of 24 hours computed every minute
+TIME_DIVISION = 1# How many timesteps do we have in 1s? For example if we want every minute, set this to 1/60
+NUM_TIME_STEPS = 12*3600 # A total of 12 hours computed every second
 
 ##### RL Agent parameters
 NUM_EPISODES = 500 # Number of episodes
 EPSILON = 0.1 # For epsilon-greedy approach
 LEARNING_RATE = 0.1
-DISCOUNT = 0.9
+DISCOUNT = 0.99
 EPS_DECAY = 0.9998
 
 ##### Environment parameters
@@ -19,8 +19,8 @@ C_E = 3.24*3.6e6 # Based on Emil Larsen's paper - heat capacity of the building
 R_IA = 5.39e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
 R_IE = 0.909e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
 R_EA = 4.47e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
-T_BOUND_MIN = 15 # We will not model anything under 15 in order to limit the number of spaces
-T_BOUND_MAX = 30 # We will not model anything over 30 in order to limit the number of spaces
+T_BOUND_MIN = 17 # We will not model anything under 15 in order to limit the number of spaces
+T_BOUND_MAX = 25 # We will not model anything over 30 in order to limit the number of spaces
 T_AMBIENT = 2 # Ambient temperature
 NOMINAL_HEAT_PUMP_POWER = 5000 # 2kW based on some quick loockup of purchaseable heat pumps
 TEMPERATURE_ROUNDING = 10000 #We are rounding up to 1/TEMPERATURE_ROUNDING
