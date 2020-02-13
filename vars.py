@@ -1,10 +1,10 @@
 #### General settings
-TIME_DIVISION = 1# How many timesteps do we have in 1s? For example if we want every minute, set this to 1/60
-NUM_TIME_STEPS = 12*3600 # A total of 12 hours computed every second
+TIME_STEP_SIZE = 60# How many seconds are in one of our timeteps? For example if we want every minute, set this to 60
+NUM_TIME_STEPS = 12*3600/TIME_STEP_SIZE # A total of 12 hours computed every second
 
 ##### RL Agent parameters
 NUM_EPISODES = 500 # Number of episodes
-EPSILON = 0.1 # For epsilon-greedy approach
+EPSILON = 0.2 # For epsilon-greedy approach
 LEARNING_RATE = 0.1
 DISCOUNT = 0.99
 EPS_DECAY = 0.9998
@@ -16,7 +16,7 @@ T_MIN = 19.5 # Minimum temperature that should be achieved inside of the buildin
 T_MAX = 22.5 # Maximum temperature that should be achieved inside of the building
 C_I = 2.07*3.6e6 # Based on Emil Larsen's paper - heat capacity of the building
 C_E = 3.24*3.6e6 # Based on Emil Larsen's paper - heat capacity of the building
-R_IA = 5.39e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
+R_IA = 5.29e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
 R_IE = 0.909e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
 R_EA = 4.47e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
 T_BOUND_MIN = 17 # We will not model anything under 15 in order to limit the number of spaces

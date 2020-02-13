@@ -56,13 +56,13 @@ class Agent():
                 print('Just finished episode {} after {} seconds\n'.format(episode, end - start))
                 print('Current reward {}\n'.format(episode_reward))
             #bar.next()
-        with open(os.getcwd() + '/data/output/' + 'q_table_LR_' + LEARNING_RATE + '_G_' + DISCOUNT + '_EPS_' + EPSILON + '_.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + 'q_table_LR_' + str(LEARNING_RATE) + '_G_' + str(DISCOUNT) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) +'_.pkl', 'wb') as f:
             pkl.dump(self.q_table,f)
 
-        with open(os.getcwd() + '/data/output/' + 'rewards_LR_' + LEARNING_RATE + '_G_' + DISCOUNT + '_EPS_' + EPSILON + '_.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + 'rewards_LR_' + str(LEARNING_RATE) + '_G_' + str(DISCOUNT) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) +'_.pkl', 'wb') as f:
             pkl.dump(self.episode_rewards,f)
 
-        with open(os.getcwd() + '/data/output/' + 'temperatures' + LEARNING_RATE + '_G_' + DISCOUNT + '_EPS_' + EPSILON + '_.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + 'temperatures' + str(LEARNING_RATE) + '_G_' + str(DISCOUNT) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) +'_.pkl', 'wb') as f:
             pkl.dump(self.temperature_evolutions,f)
         #bar.finish()
 

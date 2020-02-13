@@ -1,7 +1,7 @@
 #!/bin/sh
 ### General options
 ### --- specify queue --
-#BSUB -q hpc
+#BSUB -q elektro
 ### -- set the job Name --
 #BSUB -J heating-RL
 ### -- ask for number of cores (default: 1) --
