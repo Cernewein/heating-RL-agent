@@ -115,15 +115,15 @@ class Agent():
                                                 batch.next_state)), device=device, dtype=torch.bool)
         non_final_next_states = torch.cat([s for s in batch.next_state
                                            if s is not None])
-        state_batch = torch.cat(batch.state)
+        state_batch = torch.cat(batch.state).to(device)
 
-        action_batch = torch.cat(batch.action)
-        reward_batch = torch.cat(batch.reward)
+        action_batch = torch.cat(batch.action).to(device)
+        reward_batch = torch.cat(batch.reward).to(device)
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
-        state_action_values = self.policy_net(state_batch).gather(1, action_batch.type(torch.LongTensor))
+        state_action_values = self.policy_net(state_batch).gather(1, action_batch.type(torch.LongTensor)).to(device)
 
         # Compute V(s_{t+1}) for all next states.
         # Expected values of actions for non_final_next_states are computed based
