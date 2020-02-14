@@ -7,6 +7,7 @@ from vars import *
 from environment import Building
 from agent import Agent
 import progress
+import os
 
 agent = Agent()
 agent.train(NUM_EPISODES,NUM_TIME_STEPS)

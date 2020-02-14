@@ -32,4 +32,4 @@ virtualenv env
 python3 -m pip install --no-cache-dir -r requirements.txt
 
 # running script
-python3 main.py
+python3 deep_main.py
