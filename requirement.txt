@@ -60,7 +60,7 @@ pyzmq==18.1.1
 qtconsole==4.6.0
 requests==2.22.0
 Send2Trash==1.5.0
-sip==4.19.13
+sip
 six
 snowballstemmer
 terminado
@@ -69,7 +69,7 @@ torch==1.4.0
 tornado
 traitlets
 urllib3
-wcwidth==0.1.8
-webencodings==0.5.1
-widgetsnbextension==3.5.1
-zipp==2.1.0
+wcwidth
+webencodings
+widgetsnbextension
+zipp

@@ -62,7 +62,7 @@ class DeepQNetwork(nn.Module):
         x = F.relu(self.fc_1(state))
         x = F.relu(self.fc_2(x))
         actions = self.fc_3(x).type(torch.FloatTensor)
-        return actions
+        return actions.to(device)
 
 class Agent():
     def __init__(self, gamma, epsilon, lr, input_dims, batch_size, n_actions,

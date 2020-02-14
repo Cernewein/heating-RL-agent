@@ -1,11 +1,13 @@
 #!/bin/sh
 ### General options
 ### --- specify queue --
-#BSUB -q elektro
+#BSUB -q gpuv100
 ### -- set the job Name --
 #BSUB -J heating-RL
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 1
+### -- Select the resources: 1 gpu in exclusive process mode --
+#BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now
 #BSUB -W 24:00
 # request 30GB of system-memory
@@ -29,7 +31,7 @@ module load python3/3.6.2
 pip3 install --user virtualenv
 virtualenv env
 . env/bin/activate
-python3 -m pip install --no-cache-dir -r requirements.txt
+python3 -m pip install --no-cache-dir -r requirement.txt
 
 # running script
 python3 deep_main.py
