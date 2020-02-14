@@ -9,6 +9,12 @@ from progress.bar import Bar
 import os
 
 class Agent():
+    """
+    A basic q-learning agent for controlling the heating in a simulated building.
+
+    :param epsilon: The epsilon value for the epsilon-greedy approach
+    :param start_q_table: If there is any, a previously learned q_table
+    """
     def __init__(self, epsilon = EPSILON, start_q_table=None):
         self.episode_rewards = []
         self.temperature_evolutions = []
@@ -20,10 +26,16 @@ class Agent():
         else:
             with open(start_q_table, "rb") as f:
                 self.q_table = pkl.load(f)
-        #print(self.q_table.keys())
 
 
     def train(self, number_episodes, number_time_steps):
+        """
+        Performs the training of the agent
+
+        :param number_episodes: The number of episodes that should be performed
+        :param number_time_steps: The number of time_steps involved in training
+        :return: Saves the historical temperatures, the q-table and the rewards as pickle files
+        """
         #bar = Bar('Training..', max = number_episodes)
         for episode in range(number_episodes):
             start = time.time()
@@ -31,7 +43,7 @@ class Agent():
             episode_reward = 0
             episode_temperatures = []
             for step in range(number_time_steps):
-                temperature = building.get_inside_temperature()/1.
+                temperature = np.round(building.get_inside_temperature()/1., decimals = 4)
                 episode_temperatures.append(temperature)
                 if np.random.random() > self.epsilon:
                     action = np.argmax(self.q_table[temperature])
@@ -40,7 +52,7 @@ class Agent():
                 #action = 0
                 building.action(action)
                 reward = building.reward(action)
-                new_temperature = building.get_inside_temperature()/1.
+                new_temperature = np.round(building.get_inside_temperature()/1., decimals = 4)
                 current_q = self.q_table[temperature][action]
                 max_future_q = np.max(self.q_table[new_temperature])
                 new_q = (1-LEARNING_RATE) * current_q + LEARNING_RATE * (reward + DISCOUNT*max_future_q)
@@ -68,6 +80,8 @@ class Agent():
 
     def basic_controller(self,number_time_steps):
         """
+        Represents a very basic control mechanism that is used as baseline for comparision. It heats until T=T_max
+        and then turns the heating off until T_min is reached
 
         :param number_time_steps:
         :return:

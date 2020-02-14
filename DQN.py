@@ -21,6 +21,13 @@ dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTens
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class ReplayMemory(object):
+    """
+    This class serves as storage capability for the replay memory. It stores the Transition tuple
+    (state, action, next_state, reward) that can later be used by a DQN agent for learning based on experience replay.
+
+    :param capacity: The size of the replay memory
+    :type capacity: Integer
+    """
 
     def __init__(self, capacity):
         self.capacity = capacity
@@ -28,13 +35,20 @@ class ReplayMemory(object):
         self.position = 0
 
     def push(self, *args):
-        """Saves a transition."""
+        """Saves a transition. (the transition tuple)"""
         if len(self.memory) < self.capacity:
             self.memory.append(None)
         self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
+        """
+        Randomly selects batch_size elements from the memory.
+
+        :param batch_size: The wanted batch size
+        :type batch_size: Integer
+        :return:
+        """
         return random.sample(self.memory, batch_size)
 
     def __len__(self):
@@ -42,7 +56,19 @@ class ReplayMemory(object):
 
 
 class DeepQNetwork(nn.Module):
-    """Deep Q Network for the heating control problem."""
+    """Deep Q Network for the heating control problem.
+
+    :param lr: The learning rate
+    :type lr: Float
+    :param input_dims: The number of input dimensions (based on the variables explaining the state)
+    :type input_dims: Integer
+    :param fc_1_dims: The number of neurons for the first fully-connected layer
+    :type fc_1_dims: Integer
+    :param fc_2_dims: The number of neurons for the second fully-connected layer
+    :type fc_2_dims: Integer
+    :param n_actions: The number of actions that can be selected
+    :type n_actions: Integer
+    """
     def __init__(self, lr, input_dims, fc_1_dims, fc_2_dims, n_actions):
         super(DeepQNetwork, self).__init__()
         self.lr = lr
@@ -58,23 +84,41 @@ class DeepQNetwork(nn.Module):
         self.to(device)
 
     def forward(self, observation):
+        """
+        This method does one forward-pass for the Q-network.
+
+        :param observation: The observation ( or state) for which we want to compute the Q-values
+        :return: A Tensor with Q-values associated to each state
+        """
         state = observation.clone().detach().to(device)
         x = F.relu(self.fc_1(state))
         x = F.relu(self.fc_2(x))
         actions = self.fc_3(x).type(torch.FloatTensor)
         return actions.to(device)
 
-class Agent():
+class DAgent():
+    """
+    The agent class that will be controlling the environment.rst.
+
+    :param gamma: The discount factor for the Q-values update
+    :param epsilon: The probability for epsilon-greedy approach
+    :param lr: The learning rate
+    :param input_dims: The number of input dimensions (how many variables characterise the state)
+    :param batch_size: The batch size
+    :param n_actions: The number of actions that can be performed
+    :param mem_size: The number of transitions that should be stored
+    :param eps_end: The minimum epsilon that should be achieved
+    :param eps_dec: The decay applied to epsilon after each epoch
+    """
     def __init__(self, gamma, epsilon, lr, input_dims, batch_size, n_actions,
-                 max_mem_size = int(1e6), eps_end = 0.01, eps_dec = 0.996):
+                 mem_size = int(1e6), eps_end = 0.01, eps_dec = 0.996):
+        """Constructor method
+        """
         self.gamma = gamma
         self.epsilon = epsilon
         self.epsilon_threshold = epsilon
         self.batch_size = batch_size
         self.n_actions = n_actions
-        self.mem_counter = 0
-        self.action_space = [i for i in range(n_actions)]
-        self.max_mem_size = max_mem_size
         self.eps_dec = eps_dec
         self.eps_end = eps_end
         self.policy_net= DeepQNetwork(lr, n_actions=self.n_actions, input_dims = input_dims,
@@ -84,10 +128,17 @@ class Agent():
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=lr)
-        self.memory = ReplayMemory(10000)
+        self.memory = ReplayMemory(mem_size)
         self.steps_done = 0
 
     def select_action(self,state):
+        """
+        Selects the next action via an epsilon-greedy approach based on a state
+
+        :param state: The state for which the action should be chosen
+        :type state: Tensor
+        :return: Returns the selected action
+        """
         sample = random.random()
         self.epsilon_threshold = self.epsilon * (self.eps_dec**self.steps_done) if self.epsilon_threshold > self.eps_end else self.eps_end
         self.steps_done += 1
@@ -101,6 +152,9 @@ class Agent():
             return torch.tensor([[random.randrange(self.n_actions)]],dtype=torch.float).to(device)
 
     def optimize_model(self):
+        """
+        Runs one optimization step if there is enough experience in the replay memory.
+        """
         if len(self.memory) < self.batch_size:
             return
         transitions = self.memory.sample(self.batch_size)
@@ -123,7 +177,7 @@ class Agent():
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
-        state_action_values = self.policy_net(state_batch).gather(1, action_batch.type(torch.LongTensor)).to(device)
+        state_action_values = self.policy_net(state_batch).gather(1, action_batch.type(torch.LongTensor).to(device))
 
         # Compute V(s_{t+1}) for all next states.
         # Expected values of actions for non_final_next_states are computed based
