@@ -5,6 +5,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from collections import namedtuple
 from itertools import count
+from vars import *
 
 import torch
 import torch.nn as nn
@@ -122,9 +123,9 @@ class DAgent():
         self.eps_dec = eps_dec
         self.eps_end = eps_end
         self.policy_net= DeepQNetwork(lr, n_actions=self.n_actions, input_dims = input_dims,
-                                   fc_1_dims=256, fc_2_dims=128)
+                                   fc_1_dims=FC_1_DIMS, fc_2_dims=FC_2_DIMS)
         self.target_net = DeepQNetwork(lr, n_actions=self.n_actions, input_dims=input_dims,
-                                       fc_1_dims=256, fc_2_dims=128)
+                                       fc_1_dims=FC_1_DIMS, fc_2_dims=FC_2_DIMS)
         if ckpt:
             checkpoint = torch.load(ckpt)
             self.policy_net.load_state_dict(checkpoint['model_state_dict'])
