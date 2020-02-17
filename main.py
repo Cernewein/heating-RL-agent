@@ -36,9 +36,10 @@ def run(deep=True):
         start = time.time()
         for i_episode in range(NUM_EPISODES):
             # Initialize the environment.rst and state
-            state = torch.tensor(env.reset(),dtype=torch.float).unsqueeze(0).to(device)
+            state = env.reset()
+            temperatures_episode = [state[0]]
+            state = torch.tensor(state,dtype=torch.float).unsqueeze(0).to(device)
             score = 0
-            temperatures_episode = [state]
             for t in count():
                 # Select and perform an action
                 action = brain.select_action(state).type(torch.FloatTensor)
@@ -47,8 +48,9 @@ def run(deep=True):
                 reward = torch.tensor([reward],dtype=torch.float,device=device)
 
                 if not done:
+                    temperatures_episode.append(next_state[0])
                     next_state = torch.tensor(next_state,dtype=torch.float, device=device).unsqueeze(0)
-                    temperatures_episode.append(next_state)
+
                 else:
                     next_state = None
 
