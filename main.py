@@ -30,6 +30,7 @@ def run(deep=True):
 
     if deep:
         scores = []
+        temperatures = []
         brain = DAgent(gamma=GAMMA, epsilon=EPSILON, batch_size=BATCH_SIZE, n_actions=N_ACTIONS,
                       input_dims=INPUT_DIMS,  lr = LEARNING_RATE, eps_dec = EPS_DECAY)
         start = time.time()
@@ -37,6 +38,7 @@ def run(deep=True):
             # Initialize the environment.rst and state
             state = torch.tensor(env.reset(),dtype=torch.float).unsqueeze(0).to(device)
             score = 0
+            temperatures_episode = [state]
             for t in count():
                 # Select and perform an action
                 action = brain.select_action(state).type(torch.FloatTensor)
@@ -46,6 +48,7 @@ def run(deep=True):
 
                 if not done:
                     next_state = torch.tensor(next_state,dtype=torch.float, device=device).unsqueeze(0)
+                    temperatures_episode.append(next_state)
                 else:
                     next_state = None
 
@@ -69,8 +72,13 @@ def run(deep=True):
                 print('Current Reward {}'.format(score))
                 start = time.time()
 
+            temperatures.append(temperatures_episode)
+
         with open(os.getcwd() + '/data/output/' + 'rewards_dqn.pkl', 'wb') as f:
             pkl.dump(scores,f)
+
+        with open(os.getcwd() + '/data/output/' + 'temperatures_dqn.pkl', 'wb') as f:
+            pkl.dump(temperatures,f)
         print('Complete')
 
     else: # If we are not in the deep case, we run the classic q-learning agent
