@@ -1,0 +1,338 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>The DQN agent &mdash; Deep RL for Demand-Side Management  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The Environment" href="environment.html" />
+    <link rel="prev" title="Welcome to Deep RL for Demand-Side Management’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Deep RL for Demand-Side Management
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The DQN agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment.html">The Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_agent.html">The basic q-learning agent</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Deep RL for Demand-Side Management</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>The DQN agent</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/DQN.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-DQN">
+<span id="the-dqn-agent"></span><h1>The DQN agent<a class="headerlink" href="#module-DQN" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="DQN.DAgent">
+<em class="property">class </em><code class="sig-prename descclassname">DQN.</code><code class="sig-name descname">DAgent</code><span class="sig-paren">(</span><em class="sig-param">gamma</em>, <em class="sig-param">epsilon</em>, <em class="sig-param">lr</em>, <em class="sig-param">input_dims</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">n_actions</em>, <em class="sig-param">mem_size=1000000</em>, <em class="sig-param">eps_end=0.01</em>, <em class="sig-param">eps_dec=0.996</em><span class="sig-paren">)</span><a class="headerlink" href="#DQN.DAgent" title="Permalink to this definition">¶</a></dt>
+<dd><p>The agent class that will be controlling the environment.rst.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gamma</strong> – The discount factor for the Q-values update</p></li>
+<li><p><strong>epsilon</strong> – The probability for epsilon-greedy approach</p></li>
+<li><p><strong>lr</strong> – The learning rate</p></li>
+<li><p><strong>input_dims</strong> – The number of input dimensions (how many variables characterise the state)</p></li>
+<li><p><strong>batch_size</strong> – The batch size</p></li>
+<li><p><strong>n_actions</strong> – The number of actions that can be performed</p></li>
+<li><p><strong>mem_size</strong> – The number of transitions that should be stored</p></li>
+<li><p><strong>eps_end</strong> – The minimum epsilon that should be achieved</p></li>
+<li><p><strong>eps_dec</strong> – The decay applied to epsilon after each epoch</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="DQN.DAgent.optimize_model">
+<code class="sig-name descname">optimize_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#DQN.DAgent.optimize_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs one optimization step if there is enough experience in the replay memory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="DQN.DAgent.select_action">
+<code class="sig-name descname">select_action</code><span class="sig-paren">(</span><em class="sig-param">state</em><span class="sig-paren">)</span><a class="headerlink" href="#DQN.DAgent.select_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects the next action via an epsilon-greedy approach based on a state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>state</strong> (<em>Tensor</em>) – The state for which the action should be chosen</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the selected action</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="DQN.DeepQNetwork">
+<em class="property">class </em><code class="sig-prename descclassname">DQN.</code><code class="sig-name descname">DeepQNetwork</code><span class="sig-paren">(</span><em class="sig-param">lr</em>, <em class="sig-param">input_dims</em>, <em class="sig-param">fc_1_dims</em>, <em class="sig-param">fc_2_dims</em>, <em class="sig-param">n_actions</em><span class="sig-paren">)</span><a class="headerlink" href="#DQN.DeepQNetwork" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deep Q Network for the heating control problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lr</strong> (<em>Float</em>) – The learning rate</p></li>
+<li><p><strong>input_dims</strong> (<em>Integer</em>) – The number of input dimensions (based on the variables explaining the state)</p></li>
+<li><p><strong>fc_1_dims</strong> (<em>Integer</em>) – The number of neurons for the first fully-connected layer</p></li>
+<li><p><strong>fc_2_dims</strong> (<em>Integer</em>) – The number of neurons for the second fully-connected layer</p></li>
+<li><p><strong>n_actions</strong> (<em>Integer</em>) – The number of actions that can be selected</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="DQN.DeepQNetwork.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">observation</em><span class="sig-paren">)</span><a class="headerlink" href="#DQN.DeepQNetwork.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method does one forward-pass for the Q-network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>observation</strong> – The observation ( or state) for which we want to compute the Q-values</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Tensor with Q-values associated to each state</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="DQN.ReplayMemory">
+<em class="property">class </em><code class="sig-prename descclassname">DQN.</code><code class="sig-name descname">ReplayMemory</code><span class="sig-paren">(</span><em class="sig-param">capacity</em><span class="sig-paren">)</span><a class="headerlink" href="#DQN.ReplayMemory" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class serves as storage capability for the replay memory. It stores the Transition tuple
+(state, action, next_state, reward) that can later be used by a DQN agent for learning based on experience replay.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>capacity</strong> (<em>Integer</em>) – The size of the replay memory</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="DQN.ReplayMemory.push">
+<code class="sig-name descname">push</code><span class="sig-paren">(</span><em class="sig-param">*args</em><span class="sig-paren">)</span><a class="headerlink" href="#DQN.ReplayMemory.push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a transition. (the transition tuple)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="DQN.ReplayMemory.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#DQN.ReplayMemory.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly selects batch_size elements from the memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>batch_size</strong> (<em>Integer</em>) – The wanted batch size</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="DQN.Transition">
+<em class="property">class </em><code class="sig-prename descclassname">DQN.</code><code class="sig-name descname">Transition</code><span class="sig-paren">(</span><em class="sig-param">state</em>, <em class="sig-param">action</em>, <em class="sig-param">next_state</em>, <em class="sig-param">reward</em><span class="sig-paren">)</span><a class="headerlink" href="#DQN.Transition" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="DQN.Transition.action">
+<code class="sig-name descname">action</code><a class="headerlink" href="#DQN.Transition.action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="DQN.Transition.next_state">
+<code class="sig-name descname">next_state</code><a class="headerlink" href="#DQN.Transition.next_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="DQN.Transition.reward">
+<code class="sig-name descname">reward</code><a class="headerlink" href="#DQN.Transition.reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="DQN.Transition.state">
+<code class="sig-name descname">state</code><a class="headerlink" href="#DQN.Transition.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="environment.html" class="btn btn-neutral float-right" title="The Environment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Deep RL for Demand-Side Management’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Cédric Ernewein
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

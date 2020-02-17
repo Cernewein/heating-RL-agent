@@ -1,13 +1,17 @@
 #### General settings
 TIME_STEP_SIZE = 60# How many seconds are in one of our timeteps? For example if we want every minute, set this to 60
-NUM_TIME_STEPS = 12*3600/TIME_STEP_SIZE # A total of 12 hours computed every second
+NUM_TIME_STEPS = int(12*3600//TIME_STEP_SIZE) # A total of 12 hours computed every second
 
 ##### RL Agent parameters
-NUM_EPISODES = 500 # Number of episodes
-EPSILON = 0.2 # For epsilon-greedy approach
-LEARNING_RATE = 0.1
-DISCOUNT = 0.99
+NUM_EPISODES = 10 # Number of episodes
+EPSILON = 1 # For epsilon-greedy approach
 EPS_DECAY = 0.9998
+LEARNING_RATE = 0.1
+GAMMA = 0.99
+TARGET_UPDATE = 10
+BATCH_SIZE = 64
+N_ACTIONS = 2
+INPUT_DIMS = 1
 
 ##### Environment parameters
 E_PRICE = 10 # Price per kwh (expressed in price/kwminute)
@@ -22,7 +26,7 @@ R_EA = 4.47e-3 # Thermal resistance between interior and ambient. Based on Emil 
 T_BOUND_MIN = 17 # We will not model anything under 15 in order to limit the number of spaces
 T_BOUND_MAX = 25 # We will not model anything over 30 in order to limit the number of spaces
 T_AMBIENT = 2 # Ambient temperature
-NOMINAL_HEAT_PUMP_POWER = 5000 # 2kW based on some quick loockup of purchaseable heat pumps
+NOMINAL_HEAT_PUMP_POWER = 2000 # 2kW based on some quick loockup of purchaseable heat pumps
 TEMPERATURE_ROUNDING = 10000 #We are rounding up to 1/TEMPERATURE_ROUNDING
 PRECISION = (T_BOUND_MAX-T_BOUND_MIN)*TEMPERATURE_ROUNDING
 
