@@ -21,10 +21,12 @@ import torch.nn.functional as F
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--deep", default=True, type=lambda x: (str(x).lower() == 'true'))
+    parser.add_argument("--ckpt", default=None)
+    parser.add_argument("--model_name", default='')
     return parser.parse_args()
 
 
-def run(deep=True):
+def run(deep,ckpt,model_name):
 
     env = Building()
 
@@ -32,7 +34,7 @@ def run(deep=True):
         scores = []
         temperatures = []
         brain = DAgent(gamma=GAMMA, epsilon=EPSILON, batch_size=BATCH_SIZE, n_actions=N_ACTIONS,
-                      input_dims=INPUT_DIMS,  lr = LEARNING_RATE, eps_dec = EPS_DECAY)
+                      input_dims=INPUT_DIMS,  lr = LEARNING_RATE, eps_dec = EPS_DECAY, ckpt=ckpt)
         start = time.time()
         for i_episode in range(NUM_EPISODES):
             # Initialize the environment.rst and state
@@ -76,11 +78,23 @@ def run(deep=True):
 
             temperatures.append(temperatures_episode)
 
-        with open(os.getcwd() + '/data/output/' + 'rewards_dqn.pkl', 'wb') as f:
+        model_params={'NUM_EPISODES':NUM_EPISODES,
+                        'EPSILON':EPSILON,
+                        'EPS_DECAY':EPS_DECAY,
+                        'LEARNING_RATE':LEARNING_RATE,
+                        'GAMMA':GAMMA,
+                        'TARGET_UPDATE':TARGET_UPDATE,
+                        'BATCH_SIZE':BATCH_SIZE}
+        scores.append(model_params)
+        temperatures.append(model_params)
+        with open(os.getcwd() + '/data/output/' + model_name +'rewards_dqn.pkl', 'wb') as f:
             pkl.dump(scores,f)
 
-        with open(os.getcwd() + '/data/output/' + 'temperatures_dqn.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + model_name +'temperatures_dqn.pkl', 'wb') as f:
             pkl.dump(temperatures,f)
+
+        # Saving the final model
+        torch.save(brain.policy_net.state_dict(), os.getcwd() +'model.pt')
         print('Complete')
 
     else: # If we are not in the deep case, we run the classic q-learning agent

@@ -11,7 +11,7 @@ GAMMA = 0.99
 TARGET_UPDATE = 10
 BATCH_SIZE = 64
 N_ACTIONS = 2
-INPUT_DIMS = 1
+INPUT_DIMS = 4
 
 ##### Environment parameters
 E_PRICE = 10 # Price per kwh (expressed in price/kwminute)
@@ -23,6 +23,7 @@ C_E = 3.24*3.6e6 # Based on Emil Larsen's paper - heat capacity of the building
 R_IA = 5.29e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
 R_IE = 0.909e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
 R_EA = 4.47e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
+A_w = 7.89 # Window surface area
 T_BOUND_MIN = 17 # We will not model anything under 15 in order to limit the number of spaces
 T_BOUND_MAX = 25 # We will not model anything over 30 in order to limit the number of spaces
 T_AMBIENT = 2 # Ambient temperature

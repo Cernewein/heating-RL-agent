@@ -111,7 +111,7 @@ class DAgent():
     :param eps_dec: The decay applied to epsilon after each epoch
     """
     def __init__(self, gamma, epsilon, lr, input_dims, batch_size, n_actions,
-                 mem_size = int(1e6), eps_end = 0.01, eps_dec = 0.996):
+                 mem_size = int(1e6), eps_end = 0.01, eps_dec = 0.996,ckpt=None):
         """Constructor method
         """
         self.gamma = gamma
@@ -125,9 +125,12 @@ class DAgent():
                                    fc_1_dims=256, fc_2_dims=128)
         self.target_net = DeepQNetwork(lr, n_actions=self.n_actions, input_dims=input_dims,
                                        fc_1_dims=256, fc_2_dims=128)
+        if ckpt:
+            checkpoint = torch.load(ckpt)
+            self.policy_net.load_state_dict(checkpoint['model_state_dict'])
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
-        self.optimizer = optim.Adam(self.policy_net.parameters(), lr=lr)
+        self.optimizer = optim.RMSprop(self.policy_net.parameters())#optim.Adam(self.policy_net.parameters(), lr=lr)
         self.memory = ReplayMemory(mem_size)
         self.steps_done = 0
 

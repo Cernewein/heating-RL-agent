@@ -34,4 +34,4 @@ virtualenv env
 python3 -m pip install --no-cache-dir -r requirement.txt
 
 # running script
-python3 main.py --deep=True
+python3 main.py --deep=True --model_name=$(date +%s | tail -c 8)
