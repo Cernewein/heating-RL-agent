@@ -112,7 +112,7 @@ class DAgent():
     :param eps_dec: The decay applied to epsilon after each epoch
     """
     def __init__(self, gamma, epsilon, lr, input_dims, batch_size, n_actions,
-                 mem_size = int(1e6), eps_end = 0.01, eps_dec = 0.996,ckpt=None):
+                 mem_size = int(1e6), eps_end = 0.1, eps_dec = 0.996,ckpt=None):
         """Constructor method
         """
         self.gamma = gamma
