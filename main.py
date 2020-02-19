@@ -94,10 +94,10 @@ def run(deep,ckpt,model_name,dynamic):
 
         scores.append(model_params)
         temperatures.append(model_params)
-        with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + dynamic + '_rewards_dqn.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_rewards_dqn.pkl', 'wb') as f:
             pkl.dump(scores,f)
 
-        with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + dynamic + '_temperatures_dqn.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_temperatures_dqn.pkl', 'wb') as f:
             pkl.dump(temperatures,f)
 
         # Saving the final model
