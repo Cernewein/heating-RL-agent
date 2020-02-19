@@ -70,17 +70,19 @@ class DeepQNetwork(nn.Module):
     :param n_actions: The number of actions that can be selected
     :type n_actions: Integer
     """
-    def __init__(self, lr, input_dims, fc_1_dims, fc_2_dims, n_actions):
+    def __init__(self, lr, input_dims, fc_1_dims, fc_2_dims, fc_3_dims, n_actions):
         super(DeepQNetwork, self).__init__()
         self.lr = lr
         self.input_dims = input_dims
         self.fc_1_dims = fc_1_dims
         self.fc_2_dims = fc_2_dims
+        self.fc_3_dims = fc_3_dims
         self.n_actions = n_actions
 
         self.fc_1 = nn.Linear(self.input_dims, self.fc_1_dims)
         self.fc_2 = nn.Linear(self.fc_1_dims, self.fc_2_dims)
-        self.fc_3 = nn.Linear(self.fc_2_dims, self.n_actions)
+        self.fc_2 = nn.Linear(self.fc_2_dims, self.fc_3_dims)
+        self.fc_4 = nn.Linear(self.fc_4_dims, self.n_actions)
 
         self.to(device)
 
@@ -94,7 +96,8 @@ class DeepQNetwork(nn.Module):
         state = observation.clone().detach().to(device)
         x = F.relu(self.fc_1(state))
         x = F.relu(self.fc_2(x))
-        actions = self.fc_3(x).type(torch.FloatTensor)
+        x = F.relu(self.fc_3(x))
+        actions = self.fc_4(x).type(torch.FloatTensor)
         return actions.to(device)
 
 class DAgent():
@@ -123,9 +126,9 @@ class DAgent():
         self.eps_dec = eps_dec
         self.eps_end = eps_end
         self.policy_net= DeepQNetwork(lr, n_actions=self.n_actions, input_dims = input_dims,
-                                   fc_1_dims=FC_1_DIMS, fc_2_dims=FC_2_DIMS)
+                                   fc_1_dims=FC_1_DIMS, fc_2_dims=FC_2_DIMS, fc_3_dims=FC_3_DIMS)
         self.target_net = DeepQNetwork(lr, n_actions=self.n_actions, input_dims=input_dims,
-                                       fc_1_dims=FC_1_DIMS, fc_2_dims=FC_2_DIMS)
+                                       fc_1_dims=FC_1_DIMS, fc_2_dims=FC_2_DIMS, fc_3_dims=FC_3_DIMS)
         if ckpt:
             checkpoint = torch.load(ckpt)
             self.policy_net.load_state_dict(checkpoint['model_state_dict'])
