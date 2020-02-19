@@ -13,8 +13,10 @@ class Building:
     When instanciated, it initialises the inside temperature to 21°C, the envelope temperature to 20, and resets the done
     and time variables.
     """
-    def __init__(self):
+    def __init__(self, dynamic=False):
 
+        # If variable sun power, outside temperature, price should be used
+        self.dynamic = dynamic
         ### Initiliazing the temperatures
         self.inside_temperature = 21.0 #np.random.randint(19,24)
         self.envelope_temperature = 20
@@ -42,7 +44,7 @@ class Building:
         :type phi_e: Float
         :return: Returns the heat flow as an integer
         """
-        return phi_e*(0.0606*T_AMBIENT+2.612)
+        return phi_e*(0.0606*self.ambient_temperature+2.612)
 
     def step(self, action):
         """
@@ -68,8 +70,10 @@ class Building:
         r = self.reward(action)
         self.time +=1
 
-        # Updating the outside temperature with the new temperature
-        self.ambient_temperature = self.ambient_temperatures[self.random_day + (self.time * TIME_STEP_SIZE)//3600]
+        if self.dynamic:
+            # Updating the outside temperature with the new temperature
+            self.ambient_temperature = self.ambient_temperatures[self.random_day + (self.time * TIME_STEP_SIZE)//3600]
+            self.sun_power = self.sun_powers[self.random_day + (self.time * TIME_STEP_SIZE)//3600]
 
         if self.time >= NUM_TIME_STEPS:
             self.done = True
@@ -102,7 +106,7 @@ class Building:
         self.sun_power = self.sun_powers[self.random_day]
 
         self.done = False
-        self.time=0
+        self.time = 0
         return [self.inside_temperature,self.ambient_temperature,self.sun_power,self.time]
 
 
