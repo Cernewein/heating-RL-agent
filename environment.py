@@ -19,7 +19,7 @@ class Building:
         self.dynamic = dynamic
 
         #If we are in deep mode, we don't need to limit the temperatures
-
+        self.deep = deep
         ### Initiliazing the temperatures
         self.inside_temperature = 21.0 #np.random.randint(19,24)
         self.envelope_temperature = 20
@@ -61,7 +61,7 @@ class Building:
         #delta_envelope = 1/(R_IE*C_E) * (self.inside_temperature - self.envelope_temperature) + 1/(R_EA*C_E) * (T_AMBIENT - self.envelope_temperature)
 
         delta = 1 / (R_IA * C_I) * (self.ambient_temperature - self.inside_temperature) + \
-                action * self.heat_pump_power(NOMINAL_HEAT_PUMP_POWER)/C_I + A_w*self.sun_power
+                action * self.heat_pump_power(NOMINAL_HEAT_PUMP_POWER)/C_I + A_w*self.sun_power/C_I
         #self.envelope_temperature += delta_envelope* TIME_STEP_SIZE
         self.inside_temperature += delta * TIME_STEP_SIZE
 
