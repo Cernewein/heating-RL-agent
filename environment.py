@@ -13,10 +13,13 @@ class Building:
     When instanciated, it initialises the inside temperature to 21°C, the envelope temperature to 20, and resets the done
     and time variables.
     """
-    def __init__(self, dynamic=False):
+    def __init__(self, dynamic=False, deep=True):
 
         # If variable sun power, outside temperature, price should be used
         self.dynamic = dynamic
+
+        #If we are in deep mode, we don't need to limit the temperatures
+
         ### Initiliazing the temperatures
         self.inside_temperature = 21.0 #np.random.randint(19,24)
         self.envelope_temperature = 20
@@ -61,11 +64,13 @@ class Building:
                 action * self.heat_pump_power(NOMINAL_HEAT_PUMP_POWER)/C_I + A_w*self.sun_power
         #self.envelope_temperature += delta_envelope* TIME_STEP_SIZE
         self.inside_temperature += delta * TIME_STEP_SIZE
-        # If we are out of bounds, fix that issue
-        if self.inside_temperature > T_BOUND_MAX:
-            self.inside_temperature = T_BOUND_MAX
-        elif self.inside_temperature < T_BOUND_MIN:
-            self.inside_temperature = T_BOUND_MIN
+
+        if not self.deep:
+            # If we are out of bounds, fix that issue
+            if self.inside_temperature > T_BOUND_MAX:
+                self.inside_temperature = T_BOUND_MAX
+            elif self.inside_temperature < T_BOUND_MIN:
+                self.inside_temperature = T_BOUND_MIN
 
         r = self.reward(action)
         self.time +=1

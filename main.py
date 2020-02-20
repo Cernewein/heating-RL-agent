@@ -90,7 +90,10 @@ def run(deep,ckpt,model_name,dynamic):
                         'GAMMA':GAMMA,
                         'TARGET_UPDATE':TARGET_UPDATE,
                         'BATCH_SIZE':BATCH_SIZE,
-                         'TIME_STEP_SIZE':TIME_STEP_SIZE}
+                         'TIME_STEP_SIZE':TIME_STEP_SIZE,
+                        'NUM_HOURS':NUM_HOURS,
+                        'E_PRICE':E_PRICE,
+                        'COMFORT_PENALTY':COMFORT_PENALTY}
 
         scores.append(model_params)
         temperatures.append(model_params)
