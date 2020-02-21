@@ -100,7 +100,7 @@ class Building:
         """
         penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
         penalty *= COMFORT_PENALTY
-        reward = -action*self.price - penalty
+        reward = -action*NOMINAL_HEAT_PUMP_POWER/1000*self.price*TIME_STEP_SIZE/3600 - penalty
         return reward
 
     def reset(self):

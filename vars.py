@@ -1,6 +1,6 @@
 import torch
 ### General settings
-TIME_STEP_SIZE = 60*60# How many seconds are in one of our timeteps? For example if we want every minute, set this to 60
+TIME_STEP_SIZE = 10*60# How many seconds are in one of our timeteps? For example if we want every minute, set this to 60
 NUM_HOURS = 31*24
 NUM_TIME_STEPS = int(NUM_HOURS*3600//TIME_STEP_SIZE) # A total of 12 hours computed every second
 
@@ -8,10 +8,10 @@ NUM_TIME_STEPS = int(NUM_HOURS*3600//TIME_STEP_SIZE) # A total of 12 hours compu
 NUM_EPISODES = 2000 # Number of episodes
 EPSILON = 1 # For epsilon-greedy approach
 EPS_DECAY = 0.9998
-LEARNING_RATE = 0.00025
+LEARNING_RATE = 0.0001
 GAMMA = 0.99
 TARGET_UPDATE = 10
-BATCH_SIZE = 256
+BATCH_SIZE = 32
 N_ACTIONS = 2
 INPUT_DIMS = 5
 FC_1_DIMS = 300
