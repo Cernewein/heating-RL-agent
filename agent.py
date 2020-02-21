@@ -4,7 +4,7 @@ from matplotlib import style
 import pickle as pkl
 import time
 from vars import *
-from environment import Building
+from environment import Building, basicBuilding
 from progress.bar import Bar
 import os
 
@@ -39,7 +39,7 @@ class Agent():
         #bar = Bar('Training..', max = number_episodes)
         for episode in range(number_episodes):
             start = time.time()
-            building = Building()
+            building = basicBuilding()
             episode_reward = 0
             episode_temperatures = []
             for step in range(number_time_steps):

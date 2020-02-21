@@ -21,24 +21,30 @@ import torch.nn.functional as F
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--deep", default=True, type=lambda x: (str(x).lower() == 'true'))
+    parser.add_argument("--ckpt", default=None)
+    parser.add_argument("--model_name", default='')
+    parser.add_argument("--dynamic", default=False, type=lambda x: (str(x).lower() == 'true'))
     return parser.parse_args()
 
 
-def run(deep=True):
+def run(deep,ckpt,model_name,dynamic):
 
-    env = Building()
+    env = Building(dynamic)
 
     if deep:
         scores = []
         temperatures = []
         brain = DAgent(gamma=GAMMA, epsilon=EPSILON, batch_size=BATCH_SIZE, n_actions=N_ACTIONS,
-                      input_dims=INPUT_DIMS,  lr = LEARNING_RATE, eps_dec = EPS_DECAY)
+                      input_dims=INPUT_DIMS,  lr = LEARNING_RATE, eps_dec = EPS_DECAY, ckpt=ckpt)
         start = time.time()
         for i_episode in range(NUM_EPISODES):
             # Initialize the environment.rst and state
             state = env.reset()
             temperatures_episode = [state[0]]
-            state = torch.tensor(state,dtype=torch.float).unsqueeze(0).to(device)
+            state = torch.tensor(state,dtype=torch.float).to(device)
+            # Normalizing data using an online algo
+            brain.normalizer.observe(state)
+            state = brain.normalizer.normalize(state).unsqueeze(0)
             score = 0
             for t in count():
                 # Select and perform an action
@@ -49,7 +55,10 @@ def run(deep=True):
 
                 if not done:
                     temperatures_episode.append(next_state[0])
-                    next_state = torch.tensor(next_state,dtype=torch.float, device=device).unsqueeze(0)
+                    next_state = torch.tensor(next_state,dtype=torch.float, device=device)
+                    #normalize data using an online algo
+                    brain.normalizer.observe(next_state)
+                    next_state = brain.normalizer.normalize(next_state).unsqueeze(0)
 
                 else:
                     next_state = None
@@ -74,13 +83,34 @@ def run(deep=True):
                 print('Current Reward {}'.format(score))
                 start = time.time()
 
+            if i_episode % 1000 == 0:
+                # Saving an intermediate model
+                torch.save(brain.policy_net.state_dict(), os.getcwd() + model_name + 'model.pt')
+
             temperatures.append(temperatures_episode)
 
-        with open(os.getcwd() + '/data/output/' + 'rewards_dqn.pkl', 'wb') as f:
+        model_params = {'NUM_EPISODES':NUM_EPISODES,
+                        'EPSILON':EPSILON,
+                        'EPS_DECAY':EPS_DECAY,
+                        'LEARNING_RATE':LEARNING_RATE,
+                        'GAMMA':GAMMA,
+                        'TARGET_UPDATE':TARGET_UPDATE,
+                        'BATCH_SIZE':BATCH_SIZE,
+                         'TIME_STEP_SIZE':TIME_STEP_SIZE,
+                        'NUM_HOURS':NUM_HOURS,
+                        'E_PRICE':E_PRICE,
+                        'COMFORT_PENALTY':COMFORT_PENALTY}
+
+        scores.append(model_params)
+        temperatures.append(model_params)
+        with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_rewards_dqn.pkl', 'wb') as f:
             pkl.dump(scores,f)
 
-        with open(os.getcwd() + '/data/output/' + 'temperatures_dqn.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_temperatures_dqn.pkl', 'wb') as f:
             pkl.dump(temperatures,f)
+
+        # Saving the final model
+        torch.save(brain.policy_net.state_dict(), os.getcwd() + model_name + 'model.pt')
         print('Complete')
 
     else: # If we are not in the deep case, we run the classic q-learning agent
@@ -90,18 +120,18 @@ def run(deep=True):
         plt.figure()
         plt.plot(agent.episode_rewards)
         plt.savefig(
-            os.getcwd() + '/data/output/' + 'rewards_LR_' + str(LEARNING_RATE) + '_G_' + str(DISCOUNT) + '_EPS_' + str(
+            os.getcwd() + '/data/output/' + 'rewards_LR_' + str(LEARNING_RATE) + '_G_' + str(GAMMA) + '_EPS_' + str(
                 EPSILON) + '_TS_' + str(TIME_STEP_SIZE) + '.png')
 
         plt.figure()
         plt.plot(agent.temperature_evolutions[0])
         plt.savefig(os.getcwd() + '/data/output/' + 'temperatures_initial_LR_' + str(LEARNING_RATE) + '_G_' + str(
-            DISCOUNT) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) + '.png')
+            GAMMA) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) + '.png')
 
         plt.figure()
         plt.plot(agent.temperature_evolutions[-1])
         plt.savefig(os.getcwd() + '/data/output/' + 'temperatures_trained_LR_' + str(LEARNING_RATE) + '_G_' + str(
-            DISCOUNT) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) + '.png')
+            GAMMA) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) + '.png')
 
         for t in range(T_BOUND_MIN, T_BOUND_MAX):
             print("\n Temperature {}".format(t))
