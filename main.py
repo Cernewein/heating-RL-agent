@@ -41,7 +41,10 @@ def run(deep,ckpt,model_name,dynamic):
             # Initialize the environment.rst and state
             state = env.reset()
             temperatures_episode = [state[0]]
-            state = torch.tensor(state,dtype=torch.float).unsqueeze(0).to(device)
+            state = torch.tensor(state,dtype=torch.float).to(device)
+            # Normalizing data using an online algo
+            brain.normalizer.observe(state)
+            state = brain.normalizer.normalize(state).unsqueeze(0)
             score = 0
             for t in count():
                 # Select and perform an action
@@ -52,7 +55,10 @@ def run(deep,ckpt,model_name,dynamic):
 
                 if not done:
                     temperatures_episode.append(next_state[0])
-                    next_state = torch.tensor(next_state,dtype=torch.float, device=device).unsqueeze(0)
+                    next_state = torch.tensor(next_state,dtype=torch.float, device=device)
+                    #normalize data using an online algo
+                    brain.normalizer.observe(next_state)
+                    next_state = brain.normalizer.normalize(next_state).unsqueeze(0)
 
                 else:
                     next_state = None

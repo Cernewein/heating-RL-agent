@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from collections import namedtuple
 from itertools import count
 from vars import *
+from utils import Normalizer
 
 import torch
 import torch.nn as nn
@@ -81,7 +82,7 @@ class DeepQNetwork(nn.Module):
 
         self.fc_1 = nn.Linear(self.input_dims, self.fc_1_dims)
         self.fc_2 = nn.Linear(self.fc_1_dims, self.fc_2_dims)
-        self.fc_3 = nn.Linear(self.fc_2_dims, self.fc_3_dims)
+        #self.fc_3 = nn.Linear(self.fc_2_dims, self.fc_3_dims)
         self.fc_4 = nn.Linear(self.fc_3_dims, self.n_actions)
 
         self.to(device)
@@ -96,7 +97,7 @@ class DeepQNetwork(nn.Module):
         state = observation.clone().detach().to(device)
         x = F.relu(self.fc_1(state))
         x = F.relu(self.fc_2(x))
-        x = F.relu(self.fc_3(x))
+        #x = F.relu(self.fc_3(x))
         actions = self.fc_4(x).type(torch.FloatTensor)
         return actions.to(device)
 
@@ -118,6 +119,7 @@ class DAgent():
                  mem_size = int(1e6), momentum=0.95 ,eps_end = 0.1, eps_dec = 0.996,ckpt=None):
         """Constructor method
         """
+        self.normalizer = Normalizer(input_dims)
         self.gamma = gamma
         self.epsilon = epsilon
         self.epsilon_threshold = epsilon
