@@ -1,4 +1,5 @@
-#### General settings
+import torch
+### General settings
 TIME_STEP_SIZE = 60*60# How many seconds are in one of our timeteps? For example if we want every minute, set this to 60
 NUM_HOURS = 31*24
 NUM_TIME_STEPS = int(NUM_HOURS*3600//TIME_STEP_SIZE) # A total of 12 hours computed every second
