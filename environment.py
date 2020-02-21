@@ -104,6 +104,13 @@ class Building:
         :return: Returns the resetted inside temperature, ambient temperature and sun power
         """
         self.inside_temperature = 21
+        
+        self.random_day = random.randint(0, 365 - NUM_HOURS // 24 - 1) * 24
+        self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
+                                                header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 2]
+        self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
+                                      header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 3]
+
         self.ambient_temperature = self.ambient_temperatures[self.random_day]
         self.sun_power = self.sun_powers[self.random_day]
 
