@@ -16,7 +16,7 @@ INPUT_DIMS = 4
 FC_1_DIMS = 300
 FC_2_DIMS = 600
 FC_3_DIMS = FC_2_DIMS # If we don't want a third layer, set this to FC_2_DIMS
-
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 ##### Environment parameters
