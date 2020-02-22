@@ -1,5 +1,5 @@
 from DQN import DAgent, device
-from agent import Agent
+#from agent import Agent
 from environment import Building
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,23 +20,23 @@ import torch.nn.functional as F
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--deep", default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument("--ckpt", default=None)
     parser.add_argument("--model_name", default='')
     parser.add_argument("--dynamic", default=False, type=lambda x: (str(x).lower() == 'true'))
+    parser.add_argument("--train", default=True, type=lambda x: (str(x).lower() == 'true'))
+    parser.add_argument("--soft", default=False,type=lambda x: (str(x).lower() == 'true'))
     return parser.parse_args()
 
 
-def run(deep,ckpt,model_name,dynamic):
+def run(ckpt,model_name,dynamic,train,soft):
 
     env = Building(dynamic)
 
-    if deep:
+    if train:
         scores = []
         temperatures = []
         brain = DAgent(gamma=GAMMA, epsilon=EPSILON, batch_size=BATCH_SIZE, n_actions=N_ACTIONS,
                       input_dims=INPUT_DIMS,  lr = LEARNING_RATE, eps_dec = EPS_DECAY, ckpt=ckpt)
-        start = time.time()
         for i_episode in range(NUM_EPISODES):
             # Initialize the environment.rst and state
             state = env.reset()
@@ -74,14 +74,18 @@ def run(deep,ckpt,model_name,dynamic):
                 if done:
                     scores.append(score)
                     break
+
+            # Soft update for target network:
+
+            if soft:
+                brain.soft_update(TAU)
+
             # Update the target network, copying all weights and biases in DQN
-            if i_episode % TARGET_UPDATE == 0:
-                end = time.time()
-                brain.target_net.load_state_dict(brain.policy_net.state_dict())
-                print('------------------Episode Number {}------------------\n'.format(i_episode))
-                print('After {} seconds for {} episodes'.format(end-start, TARGET_UPDATE))
-                print('Current Reward {}'.format(score))
-                start = time.time()
+            else:
+                if i_episode % TARGET_UPDATE == 0:
+
+                     brain.target_net.load_state_dict(brain.policy_net.state_dict())
+
 
             if i_episode % 1000 == 0:
                 # Saving an intermediate model
@@ -113,29 +117,13 @@ def run(deep,ckpt,model_name,dynamic):
         torch.save(brain.policy_net.state_dict(), os.getcwd() + model_name + 'model.pt')
         print('Complete')
 
-    else: # If we are not in the deep case, we run the classic q-learning agent
-        agent = Agent()
-        agent.train(NUM_EPISODES, NUM_TIME_STEPS)
+    else:
+        if ckpt:
+            brain = DAgent(gamma=GAMMA, epsilon=EPSILON, batch_size=BATCH_SIZE, n_actions=N_ACTIONS,
+                           input_dims=INPUT_DIMS, lr=LEARNING_RATE, eps_dec=EPS_DECAY, ckpt=ckpt)
 
-        plt.figure()
-        plt.plot(agent.episode_rewards)
-        plt.savefig(
-            os.getcwd() + '/data/output/' + 'rewards_LR_' + str(LEARNING_RATE) + '_G_' + str(GAMMA) + '_EPS_' + str(
-                EPSILON) + '_TS_' + str(TIME_STEP_SIZE) + '.png')
-
-        plt.figure()
-        plt.plot(agent.temperature_evolutions[0])
-        plt.savefig(os.getcwd() + '/data/output/' + 'temperatures_initial_LR_' + str(LEARNING_RATE) + '_G_' + str(
-            GAMMA) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) + '.png')
-
-        plt.figure()
-        plt.plot(agent.temperature_evolutions[-1])
-        plt.savefig(os.getcwd() + '/data/output/' + 'temperatures_trained_LR_' + str(LEARNING_RATE) + '_G_' + str(
-            GAMMA) + '_EPS_' + str(EPSILON) + '_TS_' + str(TIME_STEP_SIZE) + '.png')
-
-        for t in range(T_BOUND_MIN, T_BOUND_MAX):
-            print("\n Temperature {}".format(t))
-            print(agent.q_table[t / 1.])
+        else:
+            print('If no training should be performed, then please choose a model that should be evaluated')
 
 if __name__ == '__main__':
     args = parse_args()

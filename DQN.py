@@ -6,56 +6,17 @@ import matplotlib.pyplot as plt
 from collections import namedtuple
 from itertools import count
 from vars import *
-from utils import Normalizer
+from utils import Normalizer, ReplayMemory
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-
-
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
-
 USE_CUDA = torch.cuda.is_available()
 dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
-
-
-class ReplayMemory(object):
-    """
-    This class serves as storage capability for the replay memory. It stores the Transition tuple
-    (state, action, next_state, reward) that can later be used by a DQN agent for learning based on experience replay.
-
-    :param capacity: The size of the replay memory
-    :type capacity: Integer
-    """
-
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.memory = []
-        self.position = 0
-
-    def push(self, *args):
-        """Saves a transition. (the transition tuple)"""
-        if len(self.memory) < self.capacity:
-            self.memory.append(None)
-        self.memory[self.position] = Transition(*args)
-        self.position = (self.position + 1) % self.capacity
-
-    def sample(self, batch_size):
-        """
-        Randomly selects batch_size elements from the memory.
-
-        :param batch_size: The wanted batch size
-        :type batch_size: Integer
-        :return:
-        """
-        return random.sample(self.memory, batch_size)
-
-    def __len__(self):
-        return len(self.memory)
-
 
 class DeepQNetwork(nn.Module):
     """Deep Q Network for the heating control problem.
@@ -207,3 +168,16 @@ class DAgent():
         for param in self.policy_net.parameters():
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
+
+    def soft_update(self, tau):
+        """Soft update model parameters.
+        θ_target = τ*θ_local + (1 - τ)*θ_target
+        Params
+        ======
+            local_model (PyTorch model): weights will be copied from
+            target_model (PyTorch model): weights will be copied to
+            tau (float): interpolation parameter
+        """
+        for target_param, local_param in zip(self.target_net.parameters(), self.policy_net.parameters()):
+            target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
+
