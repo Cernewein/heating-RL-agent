@@ -84,8 +84,11 @@ class Building:
         :param action: The selected action
         :return: Returns the reward for that action
         """
-        penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
-        penalty *= COMFORT_PENALTY
+        if self.ambient_temperature <= T_MAX:
+            penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
+            penalty *= COMFORT_PENALTY
+        else:
+            penalty = 0
         reward = -action*E_PRICE - penalty
         return reward
 
