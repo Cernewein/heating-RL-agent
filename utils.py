@@ -4,6 +4,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from vars import *
 from collections import namedtuple
+import random
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
