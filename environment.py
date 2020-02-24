@@ -75,7 +75,7 @@ class Building:
         if self.time >= NUM_TIME_STEPS:
             self.done = True
 
-        return [self.inside_temperature, self.ambient_temperature, self.sun_power], r, self.done
+        return [self.inside_temperature, self.ambient_temperature, self.sun_power, self.time % int(24*TIME_STEP_SIZE//3600)], r, self.done
 
     def reward(self,action):
         """
@@ -111,4 +111,4 @@ class Building:
 
         self.done = False
         self.time = 0
-        return [self.inside_temperature,self.ambient_temperature,self.sun_power]
+        return [self.inside_temperature,self.ambient_temperature,self.sun_power, self.time]

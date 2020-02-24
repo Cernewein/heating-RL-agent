@@ -1,5 +1,5 @@
 from DQN import DAgent, device
-#from agent import Agent
+import sys
 from environment import Building
 import numpy as np
 import matplotlib.pyplot as plt
@@ -75,6 +75,7 @@ def run(ckpt,model_name,dynamic,train,soft):
                     scores.append(score)
                     break
 
+            sys.stdout.write('Finished episode {} with reward {}\n'.format(i_episode, score))
             # Soft update for target network:
 
             if soft:
