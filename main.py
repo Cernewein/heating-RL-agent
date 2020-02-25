@@ -1,22 +1,16 @@
-from DQN import DAgent, device
+from DQN import DAgent
 import sys
 from environment import Building
-import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib import style
 style.use('ggplot')
 from vars import *
-from collections import namedtuple
 from itertools import count
 import pickle as pkl
-import time
 import os
 import argparse
-
+import sys
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -84,7 +78,6 @@ def run(ckpt,model_name,dynamic,train,soft):
             # Update the target network, copying all weights and biases in DQN
             else:
                 if i_episode % TARGET_UPDATE == 0:
-
                      brain.target_net.load_state_dict(brain.policy_net.state_dict())
 
 
