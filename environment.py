@@ -23,7 +23,7 @@ class Building:
         self.envelope_temperature = 20
 
         ### Selecting a random set for the outside temperatures based on a dataset
-        self.random_day=random.randint(0,365-NUM_HOURS//24-1)*24
+        self.random_day=random.randint(304,365-NUM_HOURS//24-1)*24
         self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
                                                 header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,2]
         self.ambient_temperature=self.ambient_temperatures[self.random_day]
@@ -81,7 +81,8 @@ class Building:
         if self.time >= NUM_TIME_STEPS:
             self.done = True
 
-        return [self.inside_temperature, self.ambient_temperature, self.sun_power, self.price ,self.time], r, self.done
+        return [self.inside_temperature, self.ambient_temperature, self.sun_power, self.price , self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done
+
 
     def reward(self,action):
         """
@@ -109,9 +110,8 @@ class Building:
         """
         self.inside_temperature = 21
 
-        self.random_day = random.randint(0, 365 - NUM_HOURS // 24 - 1) * 24
+        self.random_day = random.randint(304, 365 - NUM_HOURS // 24 - 1) * 24
 
-        ## Resetting the ambient temperature
         self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
                                                 header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 2]
 
@@ -132,3 +132,4 @@ class Building:
         self.time = 0
 
         return [self.inside_temperature,self.ambient_temperature,self.sun_power,self.price,self.time]
+

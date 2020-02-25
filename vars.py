@@ -5,7 +5,7 @@ NUM_HOURS = 31*24
 NUM_TIME_STEPS = int(NUM_HOURS*3600//TIME_STEP_SIZE) # A total of 12 hours computed every second
 
 ##### RL Agent parameters
-NUM_EPISODES = 5 # Number of episodes
+NUM_EPISODES = 10 # Number of episodes
 EPSILON = 1 # For epsilon-greedy approach
 EPS_DECAY = 0.9998
 LEARNING_RATE = 0.0001
@@ -18,7 +18,7 @@ FC_1_DIMS = 300
 FC_2_DIMS = 600
 FC_3_DIMS = FC_2_DIMS # If we don't want a third layer, set this to FC_2_DIMS
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-TAU = 0.5 # For soft update
+TAU = 0.01 # For soft update
 
 
 ##### Environment parameters

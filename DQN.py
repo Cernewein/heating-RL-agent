@@ -6,17 +6,14 @@ import matplotlib.pyplot as plt
 from collections import namedtuple
 from itertools import count
 from vars import *
-from utils import Normalizer, ReplayMemory
+from utils import Normalizer, ReplayMemory, Transition
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-Transition = namedtuple('Transition',
-                        ('state', 'action', 'next_state', 'reward'))
 
-USE_CUDA = torch.cuda.is_available()
-dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+
 
 class DeepQNetwork(nn.Module):
     """Deep Q Network for the heating control problem.
