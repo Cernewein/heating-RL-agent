@@ -10,6 +10,7 @@ import os
 import argparse
 import sys
 import torch
+import pandas as pd
 
 
 def parse_args():
@@ -17,16 +18,15 @@ def parse_args():
     parser.add_argument("--ckpt", default=None)
     parser.add_argument("--model_name", default='')
     parser.add_argument("--dynamic", default=False, type=lambda x: (str(x).lower() == 'true'))
-    parser.add_argument("--train", default=True, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument("--soft", default=False,type=lambda x: (str(x).lower() == 'true'))
+    parser.add_argument("--eval", default=False, type=lambda x: (str(x).lower() == 'true'))
     return parser.parse_args()
 
 
-def run(ckpt,model_name,dynamic,train,soft):
+def run(ckpt,model_name,dynamic,soft, eval):
 
-    env = Building(dynamic)
-
-    if train:
+    if not eval:
+        env = Building(dynamic)
         scores = []
         temperatures = []
         brain = DAgent(gamma=GAMMA, epsilon=EPSILON, batch_size=BATCH_SIZE, n_actions=N_ACTIONS,
@@ -80,10 +80,9 @@ def run(ckpt,model_name,dynamic,train,soft):
                 if i_episode % TARGET_UPDATE == 0:
                      brain.target_net.load_state_dict(brain.policy_net.state_dict())
 
-
             if i_episode % 1000 == 0:
                 # Saving an intermediate model
-                torch.save(brain.policy_net.state_dict(), os.getcwd() + model_name + 'model.pt')
+                torch.save(brain, os.getcwd() + model_name + 'model.pt')
 
             temperatures.append(temperatures_episode)
 
@@ -108,13 +107,53 @@ def run(ckpt,model_name,dynamic,train,soft):
             pkl.dump(temperatures,f)
 
         # Saving the final model
-        torch.save(brain.policy_net.state_dict(), os.getcwd() + model_name + 'model.pt')
+        torch.save(brain, os.getcwd() + model_name + 'model.pt')
         print('Complete')
 
     else:
         if ckpt:
-            brain = DAgent(gamma=GAMMA, epsilon=EPSILON, batch_size=BATCH_SIZE, n_actions=N_ACTIONS,
-                           input_dims=INPUT_DIMS, lr=LEARNING_RATE, eps_dec=EPS_DECAY, ckpt=ckpt)
+            brain = torch.load(ckpt,map_location=torch.device('cpu'))
+            brain.epsilon = 0
+            brain.eps_end = 0
+            env = Building(dynamic=True, eval=True)
+            inside_temperatures = [env.inside_temperature]
+            ambient_temperatures = [env.ambient_temperature]
+            prices = [env.price]
+            actions = [0]
+            rewards=[0]
+            print('Starting evaluation of the model')
+            state = env.reset()
+            state = torch.tensor(state, dtype=torch.float).to(device)
+            # Normalizing data using an online algo
+            brain.normalizer.observe(state)
+            state = brain.normalizer.normalize(state).unsqueeze(0)
+            for t_episode in range(NUM_HOURS):
+                action = brain.select_action(state).type(torch.FloatTensor)
+                prices.append(env.price) # Will be replaced with environment price in price branch
+                actions.append(action.item())
+                next_state, reward, done = env.step(action.item())
+                rewards.append(reward)
+                inside_temperatures.append(env.inside_temperature)
+                ambient_temperatures.append(env.ambient_temperature)
+                if not done:
+                    next_state = torch.tensor(next_state, dtype=torch.float, device=device)
+                    # normalize data using an online algo
+                    brain.normalizer.observe(next_state)
+                    next_state = brain.normalizer.normalize(next_state).unsqueeze(0)
+                else:
+                    next_state = None
+                # Move to the next state
+                state = next_state
+
+            eval_data = pd.DataFrame()
+            eval_data['Inside Temperatures'] = inside_temperatures
+            eval_data['Ambient Temperatures'] = ambient_temperatures
+            eval_data['Prices'] = prices
+            eval_data['Actions'] = actions
+            eval_data['Rewards'] = rewards
+            with open(os.getcwd() + '/data/output/' + model_name + '_eval.pkl', 'wb') as f:
+                pkl.dump(eval_data, f)
+
 
         else:
             print('If no training should be performed, then please choose a model that should be evaluated')
