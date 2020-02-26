@@ -13,9 +13,10 @@ class Building:
     When instanciated, it initialises the inside temperature to 21°C, the envelope temperature to 20, and resets the done
     and time variables.
     """
-    def __init__(self, dynamic=False):
+    def __init__(self, dynamic=False, eval=False):
 
         # If variable sun power, outside temperature, price should be used
+        self.eval = eval
         self.dynamic = dynamic
 
         ### Initiliazing the temperatures
@@ -23,7 +24,13 @@ class Building:
         self.envelope_temperature = 20
 
         ### Selecting a random set for the outside temperatures based on a dataset
-        self.random_day=random.randint(304,365-NUM_HOURS//24-1)*24
+
+        # If we are in eval mode, select the month of january
+        if self.eval:
+            self.random_day = 0 # First day of the year
+        else:
+            # Else select November/December for training
+            self.random_day=random.randint(304,365-NUM_HOURS//24-1)*24
         self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
                                                 header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,2]
         self.ambient_temperature=self.ambient_temperatures[self.random_day]
@@ -110,7 +117,10 @@ class Building:
         """
         self.inside_temperature = 21
 
-        self.random_day = random.randint(304, 365 - NUM_HOURS // 24 - 1) * 24
+        if self.eval:
+            self.random_day=0
+        else:
+            self.random_day = random.randint(304, 365 - NUM_HOURS // 24 - 1) * 24
 
         self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
                                                 header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 2]
