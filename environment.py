@@ -41,6 +41,11 @@ class Building:
                                                 header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,3]
         self.sun_power = self.sun_powers[self.random_day]
 
+        ### Based on the same day, choose the hourly prices for the episode
+
+        self.prices = pd.read_csv('data/environment/2014_DK2_spot_prices.csv',
+                                  header = 0).iloc[self.random_day:self.random_day+NUM_HOURS+1,1]
+        self.price = self.prices[self.random_day]
 
         self.done = False
         self.time=0
@@ -78,11 +83,13 @@ class Building:
             # Updating the outside temperature with the new temperature
             self.ambient_temperature = self.ambient_temperatures[self.random_day + (self.time * TIME_STEP_SIZE)//3600]
             self.sun_power = self.sun_powers[self.random_day + (self.time * TIME_STEP_SIZE)//3600]
+            self.price = self.prices[self.random_day + (self.time * TIME_STEP_SIZE) // 3600]
 
         if self.time >= NUM_TIME_STEPS:
             self.done = True
 
-        return [self.inside_temperature, self.ambient_temperature, self.sun_power, self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done
+        return [self.inside_temperature, self.ambient_temperature, self.sun_power, self.price , self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done
+
 
     def reward(self,action):
         """
@@ -91,12 +98,15 @@ class Building:
         :param action: The selected action
         :return: Returns the reward for that action
         """
+
         if self.ambient_temperature <= T_MAX:
             penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
             penalty *= COMFORT_PENALTY
         else:
             penalty = 0
-        reward = -action*E_PRICE - penalty
+
+        reward = -action*NOMINAL_HEAT_PUMP_POWER/1000*self.price*TIME_STEP_SIZE/3600 - penalty
+
         return reward
 
     def reset(self):
@@ -111,14 +121,25 @@ class Building:
             self.random_day=0
         else:
             self.random_day = random.randint(304, 365 - NUM_HOURS // 24 - 1) * 24
+
         self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
                                                 header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 2]
-        self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                      header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 3]
+
 
         self.ambient_temperature = self.ambient_temperatures[self.random_day]
+
+        ## Resetting the sun power
+        self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
+                                      header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 3]
         self.sun_power = self.sun_powers[self.random_day]
+
+        ## Resetting the prices
+        self.prices = pd.read_csv('data/environment/2014_DK2_spot_prices.csv',
+                                  header=0).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 1]
+        self.price = self.prices[self.random_day]
 
         self.done = False
         self.time = 0
-        return [self.inside_temperature,self.ambient_temperature,self.sun_power, self.time]
+
+        return [self.inside_temperature,self.ambient_temperature,self.sun_power,self.price,self.time]
+

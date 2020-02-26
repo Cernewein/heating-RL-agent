@@ -112,14 +112,15 @@ def run(ckpt,model_name,dynamic,soft, eval):
 
     else:
         if ckpt:
-            brain = torch.load(ckpt, map_location=torch.device('cpu'))
+            brain = torch.load(ckpt,map_location=torch.device('cpu'))
             brain.epsilon = 0
             brain.eps_end = 0
             env = Building(dynamic=True, eval=True)
             inside_temperatures = [env.inside_temperature]
             ambient_temperatures = [env.ambient_temperature]
+            prices = [env.price]
             actions = [0]
-            rewards = [0]
+            rewards=[0]
             print('Starting evaluation of the model')
             state = env.reset()
             state = torch.tensor(state, dtype=torch.float).to(device)
@@ -128,6 +129,7 @@ def run(ckpt,model_name,dynamic,soft, eval):
             state = brain.normalizer.normalize(state).unsqueeze(0)
             for t_episode in range(NUM_HOURS):
                 action = brain.select_action(state).type(torch.FloatTensor)
+                prices.append(env.price) # Will be replaced with environment price in price branch
                 actions.append(action.item())
                 next_state, reward, done = env.step(action.item())
                 rewards.append(reward)
@@ -146,6 +148,7 @@ def run(ckpt,model_name,dynamic,soft, eval):
             eval_data = pd.DataFrame()
             eval_data['Inside Temperatures'] = inside_temperatures
             eval_data['Ambient Temperatures'] = ambient_temperatures
+            eval_data['Prices'] = prices
             eval_data['Actions'] = actions
             eval_data['Rewards'] = rewards
             with open(os.getcwd() + '/data/output/' + model_name + '_eval.pkl', 'wb') as f:
