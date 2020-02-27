@@ -105,7 +105,7 @@ class Building:
         else:
             penalty = 0
 
-        reward = -action*NOMINAL_HEAT_PUMP_POWER/1000*self.price*TIME_STEP_SIZE/3600 - penalty
+        reward = -action*NOMINAL_HEAT_PUMP_POWER/(1e6)*self.price*TIME_STEP_SIZE/3600 - penalty
 
         return reward
 
