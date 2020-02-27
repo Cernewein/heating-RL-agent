@@ -3,6 +3,9 @@ from vars import *
 from collections import namedtuple
 import random
 from environment import Building
+
+# Taken from
+# https://github.com/pytorch/tutorials/blob/master/intermediate_source/reinforcement_q_learning.py
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
