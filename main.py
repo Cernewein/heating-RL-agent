@@ -127,7 +127,7 @@ def run(ckpt,model_name,dynamic,soft, eval):
             # Normalizing data using an online algo
             brain.normalizer.observe(state)
             state = brain.normalizer.normalize(state).unsqueeze(0)
-            for t_episode in range(NUM_HOURS):
+            for t_episode in range(NUM_TIME_STEPS):
                 action = brain.select_action(state).type(torch.FloatTensor)
                 prices.append(env.price) # Will be replaced with environment price in price branch
                 actions.append(action.item())

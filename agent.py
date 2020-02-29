@@ -78,30 +78,3 @@ class Agent():
             pkl.dump(self.temperature_evolutions,f)
         #bar.finish()
 
-    def basic_controller(self,number_time_steps):
-        """
-        Represents a very basic control mechanism that is used as baseline for comparision. It heats until T=T_max
-        and then turns the heating off until T_min is reached
-
-        :param number_time_steps:
-        :return:
-        """
-        building = Building()
-        self.temperatures = []
-        self.rewards = []
-        self.action = 0
-        for _ in range(number_time_steps):
-            if building.inside_temperature > T_MAX-1/TEMPERATURE_ROUNDING:
-                self.action = 0
-            elif building.inside_temperature < T_MIN+1/TEMPERATURE_ROUNDING:
-                self.action = 1
-                #print('taking heating action')
-            building.action(self.action)
-            self.temperatures.append(building.inside_temperature)
-            self.rewards.append(building.reward(self.action))
-
-        with open(os.getcwd() + '/data/output/' + 'rewards_basic.pkl', 'wb') as f:
-            pkl.dump(self.rewards,f)
-
-        with open(os.getcwd() + '/data/output/' + 'temperatures_basic.pkl', 'wb') as f:
-            pkl.dump(self.temperatures,f)
