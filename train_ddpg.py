@@ -18,7 +18,7 @@ def train_ddpg(ckpt, model_name, dynamic):
     env = Building(dynamic)
     scores = []
     temperatures = []
-    brain = DDPGagent()
+    brain = DDPGagent(mem_size=MEMORY_SIZE)
     for i_episode in range(NUM_EPISODES):
         # Initialize the environment.rst and state
         state = env.reset()
@@ -76,7 +76,8 @@ def train_ddpg(ckpt, model_name, dynamic):
                     'BATCH_SIZE': BATCH_SIZE,
                     'TIME_STEP_SIZE': TIME_STEP_SIZE,
                     'NUM_HOURS': NUM_HOURS,
-                    'COMFORT_PENALTY': COMFORT_PENALTY}
+                    'COMFORT_PENALTY': COMFORT_PENALTY,
+                    'MEMORY_SIZE':MEMORY_SIZE}
 
     scores.append(model_params)
     temperatures.append(model_params)

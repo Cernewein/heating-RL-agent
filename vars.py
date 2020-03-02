@@ -20,7 +20,8 @@ FC_1_DIMS = 300
 FC_2_DIMS = 600
 FC_3_DIMS = FC_2_DIMS # If we don't want a third layer, set this to FC_2_DIMS
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-TAU = 0.01 # For soft update
+TAU = 0.001 # For soft update
+MEMORY_SIZE = 45000 # For storing approx 100 episodes worth of data
 
 ##### Environment parameters
 COMFORT_PENALTY = 0.1 # Penalty applied when going outside of "comfort" bounds

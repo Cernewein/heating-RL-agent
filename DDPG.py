@@ -52,12 +52,12 @@ class Critic(nn.Module):
         # Layer 2
         self.linear2 = nn.Linear(hidden_size[0], hidden_size[1])
 
-        # Layer 3 (for the actions) --> Not needed yet because there is only one action
-        #self.linear3 = nn.Linear(num_inputs, hidden_size[2])
+        #Layer 3 (for the actions)
+        self.linear3 = nn.Linear(num_outputs, hidden_size[2])
 
         # Layer 4 - The combination layer
         # In the fourth layer the actions will be inserted also
-        self.linear4 = nn.Linear(hidden_size[1] + num_outputs, hidden_size[3])
+        self.linear4 = nn.Linear(hidden_size[1] + hidden_size[2], hidden_size[3])
         #self.ln2 = nn.LayerNorm(hidden_size[1])
 
         # Output layer (single value)
@@ -75,10 +75,10 @@ class Critic(nn.Module):
         # Layer 2
         x = self.linear2(x)
         # x = self.ln1(x)
-        x = F.relu(x)
+        #x = F.relu(x)
 
         # Layer 3
-        #x = self.linear1(x)
+        actions = self.linear3(actions)
         # x = self.ln1(x)
         #x = F.relu(x)
 
@@ -95,7 +95,7 @@ class Critic(nn.Module):
 class DDPGagent(object):
 
     def __init__(self, gamma= GAMMA, tau=TAU, hidden_size_actor=[300,600], hidden_size_critic=[300,600,600,600],
-                 num_inputs=INPUT_DIMS, action_space=np.array([[0]]), batch_size = BATCH_SIZE,mem_size =int(1e6), epsilon = EPSILON,
+                 num_inputs=INPUT_DIMS, action_space=np.array([[0]]), batch_size = BATCH_SIZE, mem_size =int(1e6), epsilon = EPSILON,
                  eps_dec=EPS_DECAY, eps_end = 0.1,lr_actor = LEARNING_RATE_ACTOR, lr_critic = LEARNING_RATE_CRITIC):
         """
         Based on https://arxiv.org/abs/1509.02971 - Continuous control with deep reinforcement learning
