@@ -8,6 +8,8 @@ from environment import Building
 # https://github.com/pytorch/tutorials/blob/master/intermediate_source/reinforcement_q_learning.py
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
+import os
+import pickle as pkl
 
 class Normalizer():
     """
@@ -67,14 +69,15 @@ class ReplayMemory(object):
 
 class BasicController():
 
-    def __init__(self, number_time_steps, dynamic):
+    def __init__(self, number_time_steps, dynamic, model_name):
         self.number_time_steps = number_time_steps
-        self.building = Building(dynamic)
+        self.building = Building(dynamic, eval=True)
         self.temperatures = []
         self.costs = []
         self.action = 0
+        self.model_name = model_name
 
-    def basic_controller(self):
+    def control(self):
         """
         Represents a very basic control mechanism that is used as baseline for comparision. It heats until T=T_max
         and then turns the heating off until T_min is reached
@@ -90,10 +93,10 @@ class BasicController():
 
             self.building.step(self.action)
             self.temperatures.append(self.building.inside_temperature)
-            self.costs.append(action*NOMINAL_HEAT_PUMP_POWER*self.building.price*TIME_STEP_SIZE/3600)
+            self.costs.append(self.action*NOMINAL_HEAT_PUMP_POWER*self.building.price/1e6*TIME_STEP_SIZE/3600)
 
-        with open(os.getcwd() + '/data/output/' + 'costs_basic.pkl', 'wb') as f:
-            pkl.dump(self.rewards, f)
+        with open(os.getcwd() + '/data/output/' + self.model_name + '_costs_basic.pkl', 'wb') as f:
+            pkl.dump(self.costs, f)
 
-        with open(os.getcwd() + '/data/output/' + 'temperatures_basic.pkl', 'wb') as f:
+        with open(os.getcwd() + '/data/output/' + self.model_name + '_temperatures_basic.pkl', 'wb') as f:
             pkl.dump(self.temperatures, f)
