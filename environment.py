@@ -31,21 +31,24 @@ class Building:
         else:
             # Else select November/December for training
             self.random_day=random.randint(304,365-NUM_HOURS//24-1)*24
-        self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                                header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,2]
-        self.ambient_temperature=self.ambient_temperatures[self.random_day]
+        #self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
+                                                #header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,2]
+        self.ambient_temperature=1#self.ambient_temperatures[self.random_day]
 
         ### Based on the same day, choose the sun irradiation for the episode
 
-        self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                                header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,3]
-        self.sun_power = self.sun_powers[self.random_day]
+        #self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
+                                                #header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,3]
+        self.sun_power = 100#self.sun_powers[self.random_day]
 
         ### Based on the same day, choose the hourly prices for the episode
 
-        self.prices = pd.read_csv('data/environment/2014_DK2_spot_prices.csv',
-                                  header = 0).iloc[self.random_day:self.random_day+NUM_HOURS+1,1]
-        self.price = self.prices[self.random_day]
+        #self.prices = pd.read_csv('data/environment/2014_DK2_spot_prices.csv',
+                                  #header = 0).iloc[self.random_day:self.random_day+NUM_HOURS+1,1]
+        self.price = 25 #self.prices[self.random_day]
+
+        ### Defining the storage capacity
+        self.storage = 0
 
         self.done = False
         self.time=0
@@ -71,12 +74,36 @@ class Building:
         #delta_envelope = 1/(R_IE*C_E) * (self.inside_temperature - self.envelope_temperature) + 1/(R_EA*C_E) * (T_AMBIENT - self.envelope_temperature)
 
         delta = 1 / (R_IA * C_I) * (self.ambient_temperature - self.inside_temperature) + \
-                self.heat_pump_power(NOMINAL_HEAT_PUMP_POWER*action)/C_I + A_w*self.sun_power/C_I
+                self.heat_pump_power(NOMINAL_HEAT_PUMP_POWER*action[0])/C_I + A_w*self.sun_power/C_I
         #self.envelope_temperature += delta_envelope* TIME_STEP_SIZE
         self.inside_temperature += delta * TIME_STEP_SIZE
 
 
-        r = self.reward(action)
+        # Battery charging or discharging cannot be greater than the defined limit
+        # It also cannot be greater than current charging state for the discharge
+        # And current empty capacity for the charging
+        if action[1] >= 0:
+            print(action[1] * C_MAX)
+            print((STORAGE_CAPACITY - self.storage) * ETA_CHARGING)
+            battery_power = np.minimum(action[1] * C_MAX, (STORAGE_CAPACITY - self.storage) / ETA_CHARGING)
+        else:
+            battery_power = np.maximum(action[1] * D_MAX, -self.storage)
+
+        print(battery_power)
+
+        self.storage += battery_power
+
+
+        # After havign updated storage, battery power is scaled to MW for price computation
+        battery_power = battery_power / (1e6)
+        # Heat pump power is adjusted so that the power is expressed in MW and also adjusted to the correct time slot size
+        heat_pump_power = action[0] * NOMINAL_HEAT_PUMP_POWER / (1e6) * TIME_STEP_SIZE / 3600
+
+        # Power drawn from grid is the sum of what is put into battery or drawn from battery and how much we are heating
+        # There is no possibility of selling power to the grid
+        power_from_grid = np.maximum(0, heat_pump_power + battery_power)
+
+        r = self.reward(power_from_grid)
         self.time +=1
 
         if self.dynamic:
@@ -88,10 +115,10 @@ class Building:
         if self.time >= NUM_TIME_STEPS:
             self.done = True
 
-        return [self.inside_temperature, self.ambient_temperature, self.sun_power, self.price , self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done
+        return [self.inside_temperature, self.ambient_temperature, self.sun_power, self.price , self.storage ,self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done
 
 
-    def reward(self,action):
+    def reward(self,power_from_grid):
         """
         Returns the received value for the chosen action and transition to next state
 
@@ -99,13 +126,10 @@ class Building:
         :return: Returns the reward for that action
         """
 
-        if self.ambient_temperature <= T_MAX:
-            penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
-            penalty *= COMFORT_PENALTY
-        else:
-            penalty = 0
+        penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
+        penalty *= COMFORT_PENALTY
 
-        reward = -action*NOMINAL_HEAT_PUMP_POWER/(1e6)*self.price*TIME_STEP_SIZE/3600 - penalty
+        reward = - power_from_grid*self.price - penalty
 
         return reward
 
@@ -138,8 +162,10 @@ class Building:
                                   header=0).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 1]
         self.price = self.prices[self.random_day]
 
+        self.storage = 0
+
         self.done = False
         self.time = 0
 
-        return [self.inside_temperature,self.ambient_temperature,self.sun_power,self.price,self.time]
+        return [self.inside_temperature,self.ambient_temperature,self.sun_power,self.price, self.storage ,self.time]
 

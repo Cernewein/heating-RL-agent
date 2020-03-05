@@ -34,4 +34,7 @@ R_IE = 0.909e-3 # Thermal resistance between interior and ambient. Based on Emil
 R_EA = 4.47e-3 # Thermal resistance between interior and ambient. Based on Emil Larsen's paper
 A_w = 7.89 # Window surface area
 NOMINAL_HEAT_PUMP_POWER = 2000 # 2kW based on some quick loockup of purchaseable heat pumps
-
+STORAGE_CAPACITY = 3000 # Number of Watts that can be stored in the battery
+C_MAX = 1500*TIME_STEP_SIZE/3600 # Power in watt that the charging can provide divided by the time step size
+D_MAX = 500*TIME_STEP_SIZE/3600 # Power in watt that the discharging can provide divided by the time step size
+ETA_CHARGING = 0.95 # Charging efficiency of the battery
