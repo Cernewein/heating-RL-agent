@@ -36,10 +36,12 @@ class Actor(nn.Module):
         #x = self.ln2(x)
         x = F.relu(x)
 
-        # Output --> Mapped into [0,1] domain
-        print(mu(x).shape)
-        mu = torch.sigmoid(self.mu(x))
-        return mu
+        # Output --> Mapped into [0,1] domain for the heating system
+        # Mapped into [-1,1] with tanh for the storage system
+        mu = self.mu(x)
+        mu_h = torch.sigmoid(mu[:,0].unsqueeze(1))
+        mu_s = torch.tanh(mu[:,1].unsqueeze(1))
+        return torch.cat((mu_h,mu_s),1)
 
 class Critic(nn.Module):
     def __init__(self, hidden_size, num_inputs, action_space):
@@ -96,7 +98,7 @@ class Critic(nn.Module):
 class DDPGagent(object):
 
     def __init__(self, gamma= GAMMA, tau=TAU, hidden_size_actor=[300,600], hidden_size_critic=[300,600,600,600],
-                 num_inputs=INPUT_DIMS, action_space=np.array([[0]]), batch_size = BATCH_SIZE, mem_size =int(1e6), epsilon = EPSILON,
+                 num_inputs=INPUT_DIMS, action_space=np.array([[0,-1],[1,1]]), batch_size = BATCH_SIZE, mem_size =int(1e6), epsilon = EPSILON,
                  eps_dec=EPS_DECAY, eps_end = 0.1,lr_actor = LEARNING_RATE_ACTOR, lr_critic = LEARNING_RATE_CRITIC):
         """
         Based on https://arxiv.org/abs/1509.02971 - Continuous control with deep reinforcement learning
@@ -171,9 +173,9 @@ class DDPGagent(object):
                 # t.max(1) will return largest column value of each row.
                 # second column on max result is index of where max element was
                 # found, so we pick action with the larger expected reward.
-                return self.actor(state)
+                return self.actor(state)[0]
         else:
-            return torch.tensor([[random.random()]], dtype=torch.float).to(device)
+            return torch.tensor([random.random(), random.uniform(-1,1)], dtype=torch.float).to(device)
 
     def optimize_model(self):
         if len(self.memory) < self.batch_size:
@@ -192,7 +194,7 @@ class DDPGagent(object):
                                            if s is not None])
         state_batch = torch.cat(batch.state).to(device)
 
-        action_batch = torch.cat(batch.action).to(device)
+        action_batch = torch.stack(batch.action).to(device)
         reward_batch = torch.cat(batch.reward).to(device)
 
         # Compute Q(s_{t+1}, a_{t+1}) for all next states and actions.

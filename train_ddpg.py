@@ -31,7 +31,7 @@ def train_ddpg(ckpt, model_name, dynamic):
         for t in count():
             # Select and perform an action
             action = brain.select_action(state).type(torch.FloatTensor)
-            next_state, reward, done = env.step(action.item())
+            next_state, reward, done = env.step(action.numpy())
             score += reward
             reward = torch.tensor([reward], dtype=torch.float, device=device)
 

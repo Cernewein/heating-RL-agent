@@ -6,7 +6,7 @@ NUM_TIME_STEPS = int(NUM_HOURS*3600//TIME_STEP_SIZE) # A total of 12 hours compu
 
 ##### RL Agent parameters
 NUM_EPISODES = 4000 # Number of episodes
-EPSILON = 1 # For epsilon-greedy approach
+EPSILON = 0.1 # For epsilon-greedy approach
 EPS_DECAY = 0.9998
 LEARNING_RATE = 0.0001
 LEARNING_RATE_ACTOR = 1e-4

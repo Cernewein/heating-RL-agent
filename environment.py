@@ -83,13 +83,9 @@ class Building:
         # It also cannot be greater than current charging state for the discharge
         # And current empty capacity for the charging
         if action[1] >= 0:
-            print(action[1] * C_MAX)
-            print((STORAGE_CAPACITY - self.storage) * ETA_CHARGING)
             battery_power = np.minimum(action[1] * C_MAX, (STORAGE_CAPACITY - self.storage) / ETA_CHARGING)
         else:
             battery_power = np.maximum(action[1] * D_MAX, -self.storage)
-
-        print(battery_power)
 
         self.storage += battery_power
 
