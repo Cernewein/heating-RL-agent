@@ -37,6 +37,7 @@ class Actor(nn.Module):
         x = F.relu(x)
 
         # Output --> Mapped into [0,1] domain
+        print(mu(x).shape)
         mu = torch.sigmoid(self.mu(x))
         return mu
 

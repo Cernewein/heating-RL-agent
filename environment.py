@@ -31,20 +31,20 @@ class Building:
         else:
             # Else select November/December for training
             self.random_day=random.randint(304,365-NUM_HOURS//24-1)*24
-        #self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                                #header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,2]
+        self.ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
+                                                header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,2]
         self.ambient_temperature=1#self.ambient_temperatures[self.random_day]
 
         ### Based on the same day, choose the sun irradiation for the episode
 
-        #self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                                #header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,3]
+        self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
+                                                header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,3]
         self.sun_power = 100#self.sun_powers[self.random_day]
 
         ### Based on the same day, choose the hourly prices for the episode
 
-        #self.prices = pd.read_csv('data/environment/2014_DK2_spot_prices.csv',
-                                  #header = 0).iloc[self.random_day:self.random_day+NUM_HOURS+1,1]
+        self.prices = pd.read_csv('data/environment/2014_DK2_spot_prices.csv',
+                                  header = 0).iloc[self.random_day:self.random_day+NUM_HOURS+1,1]
         self.price = 25 #self.prices[self.random_day]
 
         ### Defining the storage capacity
@@ -94,7 +94,7 @@ class Building:
         self.storage += battery_power
 
 
-        # After havign updated storage, battery power is scaled to MW for price computation
+        # After having updated storage, battery power is scaled to MW for price computation
         battery_power = battery_power / (1e6)
         # Heat pump power is adjusted so that the power is expressed in MW and also adjusted to the correct time slot size
         heat_pump_power = action[0] * NOMINAL_HEAT_PUMP_POWER / (1e6) * TIME_STEP_SIZE / 3600
