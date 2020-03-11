@@ -6,14 +6,14 @@ NUM_TIME_STEPS = int(NUM_HOURS*3600//TIME_STEP_SIZE) # A total of 12 hours compu
 
 ##### RL Agent parameters
 NUM_EPISODES = 750 # Number of episodes
-EPSILON = 0.1 # For epsilon-greedy approach
+EPSILON = 1 # For epsilon-greedy approach
 EPS_DECAY = 0.9998
 LEARNING_RATE = 0.0001
 LEARNING_RATE_ACTOR = 1e-4
 LEARNING_RATE_CRITIC = 1e-3
 GAMMA = 0.99
 TARGET_UPDATE = 10
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 N_ACTIONS = 2
 INPUT_DIMS = 6
 FC_1_DIMS = 300
@@ -36,6 +36,6 @@ R_EA = 4.47e-3 # Thermal resistance between interior and ambient. Based on Emil 
 A_w = 7.89 # Window surface area
 NOMINAL_HEAT_PUMP_POWER = 2000 # 2kW based on some quick loockup of purchaseable heat pumps
 STORAGE_CAPACITY = 4000 # Number of Watts that can be stored in the battery
-C_MAX = 2750 # Power in watt that the charging can provide divided by the time step size
-D_MAX = 2750 # Power in watt that the discharging can provide divided by the time step size
+C_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the charging can provide divided by the time step size
+D_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the discharging can provide divided by the time step size
 ETA_CHARGING = 0.95 # Charging efficiency of the battery

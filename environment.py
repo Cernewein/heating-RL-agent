@@ -89,10 +89,8 @@ class Building:
         else:
             battery_power = np.maximum(action[1] * D_MAX, -self.storage)
 
-        battery_power = battery_power * TIME_STEP_SIZE / 3600
         self.storage += int(battery_power)
         self.storage = np.clip(self.storage, a_min = 0, a_max=STORAGE_CAPACITY)
-
 
         # After having updated storage, battery power is scaled to MW for price computation
         battery_power = battery_power / (1e6)
