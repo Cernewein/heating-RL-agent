@@ -42,7 +42,9 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             env = Building(dynamic=True, eval=True)
             inside_temperatures = [env.inside_temperature]
             ambient_temperatures = [env.ambient_temperature]
+            storage_state = [env.storage]
             prices = [env.price]
+            power_from_grid = [env.power_from_grid]
             actions = [0]
             rewards=[0]
             print('Starting evaluation of the model')
@@ -54,11 +56,13 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             for t_episode in range(NUM_TIME_STEPS):
                 action = brain.select_action(state).type(torch.FloatTensor)
                 prices.append(env.price) # Will be replaced with environment price in price branch
-                actions.append(action.item())
-                next_state, reward, done = env.step(action.item())
+                actions.append(action.numpy())
+                next_state, reward, done = env.step(action.numpy())
                 rewards.append(reward)
                 inside_temperatures.append(env.inside_temperature)
                 ambient_temperatures.append(env.ambient_temperature)
+                storage_state.append(env.storage)
+                power_from_grid.append(env.power_from_grid)
                 if not done:
                     next_state = torch.tensor(next_state, dtype=torch.float, device=device)
                     # normalize data using an online algo
@@ -75,6 +79,8 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             eval_data['Prices'] = prices
             eval_data['Actions'] = actions
             eval_data['Rewards'] = rewards
+            eval_data['Storage'] = storage_state
+            eval_data['Power'] = power_from_grid
             with open(os.getcwd() + '/data/output/' + model_name + '_eval.pkl', 'wb') as f:
                 pkl.dump(eval_data, f)
 

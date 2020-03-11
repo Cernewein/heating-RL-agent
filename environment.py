@@ -50,6 +50,8 @@ class Building:
         ### Defining the storage capacity
         self.storage = 0
 
+        ## How much power from the grid has been drawn?
+        self.power_from_grid = 0
         self.done = False
         self.time=0
 
@@ -87,7 +89,9 @@ class Building:
         else:
             battery_power = np.maximum(action[1] * D_MAX, -self.storage)
 
-        self.storage += battery_power
+        battery_power = battery_power * TIME_STEP_SIZE / 3600
+        self.storage += int(battery_power)
+        self.storage = np.clip(self.storage, a_min = 0, a_max=STORAGE_CAPACITY)
 
 
         # After having updated storage, battery power is scaled to MW for price computation
@@ -97,9 +101,9 @@ class Building:
 
         # Power drawn from grid is the sum of what is put into battery or drawn from battery and how much we are heating
         # There is no possibility of selling power to the grid
-        power_from_grid = np.maximum(0, heat_pump_power + battery_power)
+        self.power_from_grid = np.maximum(0, heat_pump_power + battery_power)
 
-        r = self.reward(power_from_grid)
+        r = self.reward(self.power_from_grid)
         self.time +=1
 
         if self.dynamic:
@@ -124,6 +128,8 @@ class Building:
 
         penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
         penalty *= COMFORT_PENALTY
+
+        #batter_usage_penalty = np.abs(battery_action)*BATTERY_DEPRECIATION
 
         reward = - power_from_grid*self.price - penalty
 
