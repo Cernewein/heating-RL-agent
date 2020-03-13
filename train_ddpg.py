@@ -2,7 +2,7 @@ from DDPG import DDPGagent
 import sys
 from environment import Building
 from matplotlib import style
-
+import numpy as np
 style.use('ggplot')
 from vars import *
 from itertools import count
@@ -19,6 +19,7 @@ def train_ddpg(ckpt, model_name, dynamic):
     scores = []
     temperatures = []
     brain = DDPGagent(mem_size=MEMORY_SIZE)
+    best_average_reward = -1e6
     for i_episode in range(NUM_EPISODES):
         # Initialize the environment.rst and state
         state = env.reset()
@@ -60,9 +61,14 @@ def train_ddpg(ckpt, model_name, dynamic):
         sys.stdout.write('Finished episode {} with reward {}\n'.format(i_episode, score))
         # Soft update for target network:
 
-        if i_episode % 1000 == 0:
-            # Saving an intermediate model
+        if i_episode == 50:
+            best_average_reward = np.mean(scores[-50:])
             torch.save(brain, os.getcwd() + model_name + 'model.pt')
+        if i_episode > 50:
+            current_average_reward = np.mean(scores[-50:])
+            if current_average_reward > best_average_reward:
+                # Saving an intermediate model if it is better than the previous one
+                torch.save(brain, os.getcwd() + model_name + 'model.pt')
 
         temperatures.append(temperatures_episode)
 
@@ -89,5 +95,5 @@ def train_ddpg(ckpt, model_name, dynamic):
         pkl.dump(temperatures, f)
 
     # Saving the final model
-    torch.save(brain, os.getcwd() + model_name + 'model.pt')
+    #torch.save(brain, os.getcwd() + model_name + 'model.pt')
     print('Complete')
