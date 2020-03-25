@@ -67,6 +67,7 @@ def train_ddpg(ckpt, model_name, dynamic):
         if i_episode > 50:
             current_average_reward = np.mean(scores[-50:])
             if current_average_reward > best_average_reward:
+                best_average_reward = current_average_reward
                 # Saving an intermediate model if it is better than the previous one
                 torch.save(brain, os.getcwd() + model_name + 'model.pt')
 

@@ -45,7 +45,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             storage_state = [env.storage]
             prices = [env.price]
             power_from_grid = [env.power_from_grid]
-            actions = [0]
+            actions = [[0,0]]
             rewards=[0]
             print('Starting evaluation of the model')
             state = env.reset()

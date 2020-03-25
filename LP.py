@@ -24,6 +24,10 @@ R_IA = 5.29e-3 # Thermal resistance between interior and ambient. Based on Emil 
 A_w = 7.89 # Window surface area
 NOMINAL_HEAT_PUMP_POWER = 2000 # 2kW based on some quick loockup of purchaseable heat pumps
 COMFORT_PENALTY = 10
+STORAGE_CAPACITY = 4000 # Number of Watts that can be stored in the battery
+C_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the charging can provide divided by the time step size
+D_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the discharging can provide divided by the time step size
+ETA_CHARGING = 0.95 # Charging efficiency of the battery
 T = NUM_TIME_STEPS
 set_T = range(0,T-1)
 
@@ -47,10 +51,13 @@ P = {t: prices[(t * TIME_STEP_SIZE)//3600] for t in set_T}
 
 # Defining decision variables
 
-x_vars = {t:m.addVar(vtype=GRB.CONTINUOUS,lb=0, ub=1, name="x_{}".format(t)) for t in set_T}#
+x_vars = {t:m.addVar(vtype=GRB.CONTINUOUS,lb=0, ub=NOMINAL_HEAT_PUMP_POWER, name="x_{}".format(t)) for t in set_T}#
 T_i = {t:m.addVar(vtype=GRB.CONTINUOUS, name="T_{}".format(t)) for t in range(0,T)} #, lb = T_MIN, ub= T_MAX
 nu = {t:m.addVar(vtype=GRB.CONTINUOUS, name="nu_{}".format(t)) for t in range(0,T)}
-
+f = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=-D_MAX, ub = C_MAX, name="f_{}".format(t)) for t in set_T}
+#d = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=0, ub = D_MAX, name="d_{}".format(t)) for t in set_T}
+B = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=0, ub = STORAGE_CAPACITY,name="B_{}".format(t)) for t in range(0,T)}
+phi = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=0,ub = C_MAX + NOMINAL_HEAT_PUMP_POWER*TIME_STEP_SIZE//3600, name="phi_{}".format(t)) for t in set_T}
 
 #Defining the constraints
 
@@ -62,6 +69,7 @@ constraints_less_eq = {t: m.addConstr(
     rhs=T_i[t] + nu[t],
     name='max_constraint_{}'.format(t)
 ) for t in range(0,T)}
+
 
 # >= contraints
 
@@ -79,7 +87,7 @@ constraints_eq = {t: m.addConstr(
     lhs = T_i[t],
     sense = GRB.EQUAL,
     rhs= T_i[t-1] + TIME_STEP_SIZE*(1 / (R_IA * C_I) * (T_a[t-1] - T_i[t-1]) + \
-                x_vars[t-1] * heat_pump_power(NOMINAL_HEAT_PUMP_POWER, T_a[t-1])/C_I + A_w*Phi_s[t-1]/C_I),
+                heat_pump_power(x_vars[t-1], T_a[t-1])/C_I + A_w*Phi_s[t-1]/C_I),
     name='equality_constraint_{}'.format(t)
 ) for t in range(1,T)}
 
@@ -89,9 +97,30 @@ constraints_eq[0] = m.addConstr(
     rhs= 21,
     name='equality_constraint_{}'.format(0)
 )
+
+constraints_eq_power = {t: m.addConstr(
+    lhs = phi[t],
+    sense = GRB.EQUAL,
+    rhs= f[t] + x_vars[t]*TIME_STEP_SIZE/3600,
+    name='equality_constraint_power_{}'.format(t)
+) for t in set_T}
+
+constraints_eq_battery = {t: m.addConstr(
+    lhs = B[t],
+    sense = GRB.EQUAL,
+    rhs= B[t-1] + f[t-1],
+    name='equality_constraint_battery_{}'.format(t)
+) for t in range(1,T)}
+
+constraints_eq_battery[0] = m.addConstr(
+    lhs = B[0],
+    sense = GRB.EQUAL,
+    rhs= 0,
+    name='equality_battery_{}'.format(0)
+)
 # Objective
 
-objective = gp.quicksum(x_vars[t]*P[t]*NOMINAL_HEAT_PUMP_POWER/1e6*TIME_STEP_SIZE/3600 + COMFORT_PENALTY*nu[t] for t in set_T)
+objective = gp.quicksum(phi[t]*P[t]/1e6 + COMFORT_PENALTY*nu[t] for t in set_T)
 m.ModelSense = GRB.MINIMIZE
 m.setObjective(objective)
 m.optimize()
@@ -99,7 +128,7 @@ m.optimize()
 opt_df = pd.DataFrame.from_dict(x_vars, orient='index', columns= ["variable_object"])
 
 cost=0
-for t,varname in enumerate(x_vars.values()):
+for t,varname in enumerate(phi.values()):
     cost+=m.getVarByName(varname.VarName).x*P[t]
 
-print(cost*NOMINAL_HEAT_PUMP_POWER/1e6*TIME_STEP_SIZE/3600)
+print(cost/1e6)
