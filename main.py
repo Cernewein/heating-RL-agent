@@ -11,6 +11,7 @@ import argparse
 import sys
 import torch
 import pandas as pd
+import numpy as np
 
 
 def parse_args():
@@ -151,9 +152,36 @@ def run(ckpt,model_name,dynamic,soft, eval):
             eval_data['Prices'] = prices
             eval_data['Actions'] = actions
             eval_data['Rewards'] = rewards
-            with open(os.getcwd() + '/data/output/' + model_name + '_eval.pkl', 'wb') as f:
-                pkl.dump(eval_data, f)
+            #with open(os.getcwd() + '/data/output/' + model_name + '_january_eval.pkl', 'wb') as f:
+                #pkl.dump(eval_data, f)
 
+            print('Finished the evaluation on January \n'+
+                  'Starting policy evaluation')
+            # We will run through a number of combinations for inside temperature,
+            # Outside temperature and price. Time and sun will be fixed for this evaluation
+            # Values will onlu be saved if decision output by agent is equal to 1
+            inside_temperatures_1 = []
+            ambient_temperatures_1 = []
+            prices_1 = []
+
+            for inside_temp in np.arange(0,30, 1/TEMPERATURE_ROUNDING):
+                for ambient_temp in np.arange(-10,15, 1/TEMPERATURE_ROUNDING):
+                    for price in range(0,40):
+                        state = [inside_temp, ambient_temp, 100, price , 12]
+                        state = torch.tensor(state, dtype=torch.float).to(device)
+                        state = brain.normalizer.normalize(state).unsqueeze(0)
+                        action = brain.select_action(state).type(torch.FloatTensor).item()
+                        if action == 1.0:
+                            inside_temperatures_1.append(inside_temp)
+                            ambient_temperatures_1.append(ambient_temp)
+                            prices_1.append(price)
+
+            eval_data = pd.DataFrame()
+            eval_data['Inside Temperatures'] = inside_temperatures_1
+            eval_data['Ambient Temperatures'] = ambient_temperatures_1
+            eval_data['Prices'] = prices_1
+            with open(os.getcwd() + '/data/output/' + model_name + 'policy_eval.pkl', 'wb') as f:
+                pkl.dump(eval_data, f)
 
         else:
             print('If no training should be performed, then please choose a model that should be evaluated')
