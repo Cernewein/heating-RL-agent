@@ -163,15 +163,17 @@ def run(ckpt,model_name,dynamic,soft, eval):
             inside_temperatures_1 = []
             ambient_temperatures_1 = []
             prices_1 = []
+            data = []
+            actions = []
 
-            for inside_temp in np.arange(0,30, 1/TEMPERATURE_ROUNDING):
-                for ambient_temp in np.arange(-10,15, 1/TEMPERATURE_ROUNDING):
-                    for price in range(0,40):
-                        state = [inside_temp, ambient_temp, 100, price , 12]
+            for inside_temp in np.arange(0,30, 1/10):
+                for ambient_temp in np.arange(-10,15, 1/10):
+                    for price in range(0,35):
+                        state = [inside_temp, ambient_temp, 0, price , 12]
                         state = torch.tensor(state, dtype=torch.float).to(device)
                         state = brain.normalizer.normalize(state).unsqueeze(0)
                         action = brain.select_action(state).type(torch.FloatTensor).item()
-                        if action == 1.0:
+                        if action == 1:
                             inside_temperatures_1.append(inside_temp)
                             ambient_temperatures_1.append(ambient_temp)
                             prices_1.append(price)
@@ -185,6 +187,7 @@ def run(ckpt,model_name,dynamic,soft, eval):
 
         else:
             print('If no training should be performed, then please choose a model that should be evaluated')
+
 
 if __name__ == '__main__':
     args = parse_args()
