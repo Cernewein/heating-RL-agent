@@ -13,6 +13,7 @@ import torch
 import pandas as pd
 from train_dqn import train_dqn
 from train_ddpg import train_ddpg
+import numpy as np
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -76,6 +77,36 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             eval_data['Actions'] = actions
             eval_data['Rewards'] = rewards
             with open(os.getcwd() + '/data/output/' + model_name + '_eval.pkl', 'wb') as f:
+                pkl.dump(eval_data, f)
+
+            print('Finished the evaluation on January \n' +
+                  'Starting policy evaluation')
+            # We will run through a number of combinations for inside temperature,
+            # Outside temperature and price. Time and sun will be fixed for this evaluation
+            # Values will onlu be saved if decision output by agent is equal to 1
+            inside_temperatures = []
+            ambient_temperatures = []
+            prices = []
+            actions = []
+
+            for inside_temp in np.arange(0, 30, 1 / 10):
+                for ambient_temp in np.arange(-10, 10, 1 / 10):
+                    for price in range(0, 35):
+                        state = [inside_temp, ambient_temp, 0, price, 12]
+                        state = torch.tensor(state, dtype=torch.float).to(device)
+                        state = brain.normalizer.normalize(state).unsqueeze(0)
+                        action = brain.select_action(state).type(torch.FloatTensor).item()
+                        inside_temperatures.append(inside_temp)
+                        ambient_temperatures.append(ambient_temp)
+                        prices.append(price)
+                        actions.append(action)
+
+            eval_data = pd.DataFrame()
+            eval_data['Inside Temperatures'] = inside_temperatures
+            eval_data['Ambient Temperatures'] = ambient_temperatures
+            eval_data['Prices'] = prices
+            eval_data['Actions'] = actions
+            with open(os.getcwd() + '/data/output/' + model_name + 'policy_eval.pkl', 'wb') as f:
                 pkl.dump(eval_data, f)
 
 

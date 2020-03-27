@@ -98,8 +98,8 @@ m.optimize()
 
 opt_df = pd.DataFrame.from_dict(x_vars, orient='index', columns= ["variable_object"])
 
-cost=0
+power=0
 for t,varname in enumerate(x_vars.values()):
-    cost+=m.getVarByName(varname.VarName).x*P[t]
+    power+=m.getVarByName(varname.VarName).x*TIME_STEP_SIZE/3600*2000
 
-print(cost*NOMINAL_HEAT_PUMP_POWER/1e6*TIME_STEP_SIZE/3600)
+print(power)
