@@ -47,7 +47,7 @@ P = {t: prices[(t * TIME_STEP_SIZE)//3600] for t in set_T}
 
 # Defining decision variables
 
-x_vars = {t:m.addVar(vtype=GRB.CONTINUOUS,lb=0, ub=1, name="x_{}".format(t)) for t in set_T}#
+x_vars = {t:m.addVar(vtype=GRB.BINARY, name="x_{}".format(t)) for t in set_T}#
 T_i = {t:m.addVar(vtype=GRB.CONTINUOUS, name="T_{}".format(t)) for t in range(0,T)} #, lb = T_MIN, ub= T_MAX
 nu = {t:m.addVar(vtype=GRB.CONTINUOUS, name="nu_{}".format(t)) for t in range(0,T)}
 
@@ -99,7 +99,10 @@ m.optimize()
 opt_df = pd.DataFrame.from_dict(x_vars, orient='index', columns= ["variable_object"])
 
 cost=0
+power=0
 for t,varname in enumerate(x_vars.values()):
     cost+=m.getVarByName(varname.VarName).x*P[t]
+    power += m.getVarByName(varname.VarName).x * TIME_STEP_SIZE/3600 * 2000
 
 print(cost*NOMINAL_HEAT_PUMP_POWER/1e6*TIME_STEP_SIZE/3600)
+print(power)
