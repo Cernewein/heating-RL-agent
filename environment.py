@@ -85,12 +85,12 @@ class Building:
         # It also cannot be greater than current charging state for the discharge
         # And current empty capacity for the charging
         if action[1] >= 0:
-            battery_power = np.minimum(action[1] * C_MAX, (STORAGE_CAPACITY - self.storage) / ETA_CHARGING)
+            battery_power = np.minimum(action[1] * C_MAX, (STORAGE_CAPACITY - self.storage) / ETA)
+            self.storage += int(battery_power * ETA)
         else:
-            battery_power = np.maximum(action[1] * D_MAX, -self.storage)
+            battery_power = np.maximum(action[1] * D_MAX, -self.storage * ETA)
+            self.storage += int(battery_power / ETA)
 
-        self.storage += int(battery_power)
-        self.storage = np.clip(self.storage, a_min = 0, a_max=STORAGE_CAPACITY)
 
         # After having updated storage, battery power is scaled to MW for price computation
         battery_power = battery_power / (1e6)
@@ -101,7 +101,7 @@ class Building:
         # There is no possibility of selling power to the grid
         self.power_from_grid = np.maximum(0, heat_pump_power + battery_power)
 
-        r = self.reward(self.power_from_grid)
+        r = self.reward(self.power_from_grid, battery_power)
         self.time +=1
 
         if self.dynamic:
@@ -116,7 +116,7 @@ class Building:
         return [self.inside_temperature, self.ambient_temperature, self.sun_power, self.price , self.storage ,self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done
 
 
-    def reward(self,power_from_grid):
+    def reward(self,power_from_grid, battery_power):
         """
         Returns the received value for the chosen action and transition to next state
 
@@ -127,9 +127,9 @@ class Building:
         penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
         penalty *= COMFORT_PENALTY
 
-        #batter_usage_penalty = np.abs(battery_action)*BATTERY_DEPRECIATION
+        battery_usage_penalty = np.abs(battery_power*1e3) # Negative reward of -1 per kWh
 
-        reward = - power_from_grid*self.price - penalty
+        reward = - power_from_grid*self.price - penalty - battery_usage_penalty
 
         return reward
 

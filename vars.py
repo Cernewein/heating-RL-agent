@@ -38,4 +38,4 @@ NOMINAL_HEAT_PUMP_POWER = 2000 # 2kW based on some quick loockup of purchaseable
 STORAGE_CAPACITY = 4000 # Number of Watts that can be stored in the battery
 C_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the charging can provide divided by the time step size
 D_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the discharging can provide divided by the time step size
-ETA_CHARGING = 0.95 # Charging efficiency of the battery
+ETA = 1 # Charging and discharging efficiency of the battery

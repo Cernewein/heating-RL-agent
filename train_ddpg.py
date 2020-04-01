@@ -84,7 +84,8 @@ def train_ddpg(ckpt, model_name, dynamic):
                     'TIME_STEP_SIZE': TIME_STEP_SIZE,
                     'NUM_HOURS': NUM_HOURS,
                     'COMFORT_PENALTY': COMFORT_PENALTY,
-                    'MEMORY_SIZE':MEMORY_SIZE}
+                    'MEMORY_SIZE':MEMORY_SIZE,
+                    'ETA_BATTERY':ETA}
 
     scores.append(model_params)
     temperatures.append(model_params)
