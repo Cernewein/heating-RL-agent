@@ -61,14 +61,14 @@ def train_ddpg(ckpt, model_name, dynamic):
         sys.stdout.write('Finished episode {} with reward {}\n'.format(i_episode, score))
         # Soft update for target network:
 
-        if i_episode == 50:
-            best_average_reward = np.mean(scores[-50:])
-            torch.save(brain, os.getcwd() + model_name + 'model.pt')
-        if i_episode > 50:
-            current_average_reward = np.mean(scores[-50:])
-            if current_average_reward > best_average_reward:
-                # Saving an intermediate model if it is better than the previous one
-                torch.save(brain, os.getcwd() + model_name + 'model.pt')
+        # if i_episode == 50:
+        #     best_average_reward = np.mean(scores[-50:])
+        #     torch.save(brain, os.getcwd() + model_name + 'model.pt')
+        # if i_episode > 50:
+        #     current_average_reward = np.mean(scores[-50:])
+        #     if current_average_reward > best_average_reward:
+        #         # Saving an intermediate model if it is better than the previous one
+        #         torch.save(brain, os.getcwd() + model_name + 'model.pt')
 
         temperatures.append(temperatures_episode)
 
@@ -95,5 +95,5 @@ def train_ddpg(ckpt, model_name, dynamic):
         pkl.dump(temperatures, f)
 
     # Saving the final model
-    #torch.save(brain, os.getcwd() + model_name + 'model.pt')
+    torch.save(brain, os.getcwd() + model_name + 'model.pt')
     print('Complete')
