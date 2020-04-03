@@ -105,12 +105,8 @@ class Building:
             pv_generation = self.sun_power * PV_EFFICIENCY * PV_SURFACE * TIME_STEP_SIZE/3600 / (1e6)
         else:
             pv_generation = 0
-        print(pv_generation)
-        print(heat_pump_power)
-        print(heat_pump_power)
         self.power_from_grid = heat_pump_power + battery_power - pv_generation
 
-        print(self.power_from_grid)
         #self.power_from_grid = np.maximum(0, heat_pump_power + battery_power)
 
         r = self.reward(self.power_from_grid, battery_power)
@@ -146,7 +142,6 @@ class Building:
         else:
             paid_price = - power_from_grid*self.price * SELL_PRICE_DISCOUNT
 
-        print(paid_price)
 
         reward =  paid_price - penalty - battery_usage_penalty
 
