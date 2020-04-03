@@ -25,7 +25,7 @@ MEMORY_SIZE = 144000 # For storing approx 100 episodes worth of data
 
 ##### Environment parameters
 COMFORT_PENALTY = 10 # Penalty applied when going outside of "comfort" bounds
-BATTERY_DEPRECIATION = 0.1 # When using the battery some depreciation is created
+BATTERY_DEPRECIATION = 1 # When using the battery some depreciation is created
 T_MIN = 19.5 # Minimum temperature that should be achieved inside of the building
 T_MAX = 22.5 # Maximum temperature that should be achieved inside of the building
 C_I = 2.07*3.6e6 # Based on Emil Larsen's paper - heat capacity of the building
