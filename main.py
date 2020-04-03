@@ -167,21 +167,21 @@ def run(ckpt,model_name,dynamic,soft, eval):
             actions = []
 
             for inside_temp in np.arange(0,30, 1/10):
-                for ambient_temp in np.arange(-10,15, 1/10):
-                    for price in range(0,35):
-                        state = [inside_temp, ambient_temp, 0, price , 12]
-                        state = torch.tensor(state, dtype=torch.float).to(device)
-                        state = brain.normalizer.normalize(state).unsqueeze(0)
-                        action = brain.select_action(state).type(torch.FloatTensor).item()
-                        if action == 1:
-                            inside_temperatures_1.append(inside_temp)
-                            ambient_temperatures_1.append(ambient_temp)
-                            prices_1.append(price)
+                #for ambient_temp in np.arange(-10,15, 1/10):
+                    #for price in range(0,35):
+                state = [inside_temp, 12]# ambient_temp, 0, price , 12]
+                state = torch.tensor(state, dtype=torch.float).to(device)
+                state = brain.normalizer.normalize(state).unsqueeze(0)
+                action = brain.select_action(state).type(torch.FloatTensor).item()
+                if action == 1:
+                    inside_temperatures_1.append(inside_temp)
+                    #ambient_temperatures_1.append(ambient_temp)
+                    #prices_1.append(price)
 
             eval_data = pd.DataFrame()
             eval_data['Inside Temperatures'] = inside_temperatures_1
-            eval_data['Ambient Temperatures'] = ambient_temperatures_1
-            eval_data['Prices'] = prices_1
+            #eval_data['Ambient Temperatures'] = ambient_temperatures_1
+            #eval_data['Prices'] = prices_1
             with open(os.getcwd() + '/data/output/' + model_name + 'policy_eval.pkl', 'wb') as f:
                 pkl.dump(eval_data, f)
 
