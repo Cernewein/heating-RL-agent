@@ -13,11 +13,12 @@ class Building:
     When instanciated, it initialises the inside temperature to 21°C, the envelope temperature to 20, and resets the done
     and time variables.
     """
-    def __init__(self, dynamic=False, eval=False):
+    def __init__(self, dynamic=False, eval=False, pv_gen=False):
 
         # If variable sun power, outside temperature, price should be used
         self.eval = eval
         self.dynamic = dynamic
+        self.pv_gen= pv_gen
 
         ### Initiliazing the temperatures
         self.inside_temperature = 21.0 #np.random.randint(19,24)
@@ -98,8 +99,19 @@ class Building:
         heat_pump_power = action[0] * NOMINAL_HEAT_PUMP_POWER / (1e6) * TIME_STEP_SIZE / 3600
 
         # Power drawn from grid is the sum of what is put into battery or drawn from battery and how much we are heating
-        # There is no possibility of selling power to the grid
-        self.power_from_grid = np.maximum(0, heat_pump_power + battery_power)
+        # It is also minus what has been produced by PV if PV mode is activated
+
+        if self.pv_gen:
+            pv_generation = self.sun_power * PV_EFFICIENCY * PV_SURFACE * TIME_STEP_SIZE/3600 / (1e6)
+        else:
+            pv_generation = 0
+        print(pv_generation)
+        print(heat_pump_power)
+        print(heat_pump_power)
+        self.power_from_grid = heat_pump_power + battery_power - pv_generation
+
+        print(self.power_from_grid)
+        #self.power_from_grid = np.maximum(0, heat_pump_power + battery_power)
 
         r = self.reward(self.power_from_grid, battery_power)
         self.time +=1
@@ -127,9 +139,16 @@ class Building:
         penalty = np.maximum(0,self.inside_temperature-T_MAX) + np.maximum(0,T_MIN-self.inside_temperature)
         penalty *= COMFORT_PENALTY
 
-        battery_usage_penalty = np.abs(battery_power*1e3) # Negative reward of -1 per kWh
+        battery_usage_penalty = np.abs(BATTERY_DEPRECIATION*battery_power*1e3) # Negative reward of BATTERY_DEPRECIATION per kWh
 
-        reward = - power_from_grid*self.price - penalty - battery_usage_penalty
+        if power_from_grid >=0:
+            paid_price = - power_from_grid*self.price
+        else:
+            paid_price = - power_from_grid*self.price * SELL_PRICE_DISCOUNT
+
+        print(paid_price)
+
+        reward =  paid_price - penalty - battery_usage_penalty
 
         return reward
 

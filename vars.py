@@ -25,7 +25,7 @@ MEMORY_SIZE = 144000 # For storing approx 100 episodes worth of data
 
 ##### Environment parameters
 COMFORT_PENALTY = 10 # Penalty applied when going outside of "comfort" bounds
-BATTERY_DEPRECIATION = 1 # When using the battery some depreciation is created
+BATTERY_DEPRECIATION = 0.1 # When using the battery some depreciation is created
 T_MIN = 19.5 # Minimum temperature that should be achieved inside of the building
 T_MAX = 22.5 # Maximum temperature that should be achieved inside of the building
 C_I = 2.07*3.6e6 # Based on Emil Larsen's paper - heat capacity of the building
@@ -38,4 +38,7 @@ NOMINAL_HEAT_PUMP_POWER = 2000 # 2kW based on some quick loockup of purchaseable
 STORAGE_CAPACITY = 4000 # Number of Watts that can be stored in the battery
 C_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the charging can provide divided by the time step size
 D_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the discharging can provide divided by the time step size
-ETA = 1 # Charging and discharging efficiency of the battery
+ETA = 0.95 # Charging and discharging efficiency of the battery
+SELL_PRICE_DISCOUNT = 0.9 # Percentage of buying price, so selling price = SELL_PRICE_DISCOUNT*buying_price
+PV_EFFICIENCY = 0.15
+PV_SURFACE = 30
