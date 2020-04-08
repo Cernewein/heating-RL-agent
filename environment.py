@@ -48,7 +48,7 @@ class Building:
         self.price = self.prices[self.random_day]
 
         ### Defining the storage capacity
-        self.storage = 0
+        self.storage = INITIAL_STORAGE
 
         ## How much power from the grid has been drawn?
         self.power_from_grid = 0
@@ -85,7 +85,7 @@ class Building:
             battery_power = np.minimum(action[1] * C_MAX, (STORAGE_CAPACITY - self.storage) / ETA)
             self.storage += int(battery_power * ETA)
         else:
-            battery_power = np.maximum(action[1] * D_MAX, -self.storage * ETA)
+            battery_power = np.maximum(action[1] * D_MAX, (MIN_STORAGE - self.storage) * ETA)
             self.storage += int(battery_power / ETA)
 
 
