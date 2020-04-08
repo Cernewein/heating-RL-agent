@@ -116,47 +116,47 @@ def run(ckpt,model_name,dynamic,soft, eval):
             brain = torch.load(ckpt,map_location=torch.device('cpu'))
             brain.epsilon = 0
             brain.eps_end = 0
-            env = Building(dynamic=True, eval=True)
-            inside_temperatures = [env.inside_temperature]
-            ambient_temperatures = [env.ambient_temperature]
-            prices = [env.price]
-            actions = [0]
-            rewards=[0]
-            print('Starting evaluation of the model')
-            state = env.reset()
-            state = torch.tensor(state, dtype=torch.float).to(device)
-            # Normalizing data using an online algo
-            brain.normalizer.observe(state)
-            state = brain.normalizer.normalize(state).unsqueeze(0)
-            for t_episode in range(NUM_TIME_STEPS):
-                action = brain.select_action(state).type(torch.FloatTensor)
-                prices.append(env.price) # Will be replaced with environment price in price branch
-                actions.append(action.item())
-                next_state, reward, done = env.step(action.item())
-                rewards.append(reward)
-                inside_temperatures.append(env.inside_temperature)
-                ambient_temperatures.append(env.ambient_temperature)
-                if not done:
-                    next_state = torch.tensor(next_state, dtype=torch.float, device=device)
-                    # normalize data using an online algo
-                    brain.normalizer.observe(next_state)
-                    next_state = brain.normalizer.normalize(next_state).unsqueeze(0)
-                else:
-                    next_state = None
-                # Move to the next state
-                state = next_state
-
-            eval_data = pd.DataFrame()
-            eval_data['Inside Temperatures'] = inside_temperatures
-            eval_data['Ambient Temperatures'] = ambient_temperatures
-            eval_data['Prices'] = prices
-            eval_data['Actions'] = actions
-            eval_data['Rewards'] = rewards
-            #with open(os.getcwd() + '/data/output/' + model_name + '_january_eval.pkl', 'wb') as f:
-                #pkl.dump(eval_data, f)
-
-            print('Finished the evaluation on January \n'+
-                  'Starting policy evaluation')
+            # env = Building(dynamic=True, eval=True)
+            # inside_temperatures = [env.inside_temperature]
+            # ambient_temperatures = [env.ambient_temperature]
+            # prices = [env.price]
+            # actions = [0]
+            # rewards=[0]
+            # print('Starting evaluation of the model')
+            # state = env.reset()
+            # state = torch.tensor(state, dtype=torch.float).to(device)
+            # # Normalizing data using an online algo
+            # brain.normalizer.observe(state)
+            # state = brain.normalizer.normalize(state).unsqueeze(0)
+            # for t_episode in range(NUM_TIME_STEPS):
+            #     action = brain.select_action(state).type(torch.FloatTensor)
+            #     prices.append(env.price) # Will be replaced with environment price in price branch
+            #     actions.append(action.item())
+            #     next_state, reward, done = env.step(action.item())
+            #     rewards.append(reward)
+            #     inside_temperatures.append(env.inside_temperature)
+            #     ambient_temperatures.append(env.ambient_temperature)
+            #     if not done:
+            #         next_state = torch.tensor(next_state, dtype=torch.float, device=device)
+            #         # normalize data using an online algo
+            #         brain.normalizer.observe(next_state)
+            #         next_state = brain.normalizer.normalize(next_state).unsqueeze(0)
+            #     else:
+            #         next_state = None
+            #     # Move to the next state
+            #     state = next_state
+            #
+            # eval_data = pd.DataFrame()
+            # eval_data['Inside Temperatures'] = inside_temperatures
+            # eval_data['Ambient Temperatures'] = ambient_temperatures
+            # eval_data['Prices'] = prices
+            # eval_data['Actions'] = actions
+            # eval_data['Rewards'] = rewards
+            # #with open(os.getcwd() + '/data/output/' + model_name + '_january_eval.pkl', 'wb') as f:
+            #     #pkl.dump(eval_data, f)
+            #
+            # print('Finished the evaluation on January \n'+
+            #       'Starting policy evaluation')
             # We will run through a number of combinations for inside temperature,
             # Outside temperature and price. Time and sun will be fixed for this evaluation
             # Values will onlu be saved if decision output by agent is equal to 1
@@ -173,13 +173,14 @@ def run(ckpt,model_name,dynamic,soft, eval):
                 state = torch.tensor(state, dtype=torch.float).to(device)
                 state = brain.normalizer.normalize(state).unsqueeze(0)
                 action = brain.select_action(state).type(torch.FloatTensor).item()
-                if action == 1:
-                    inside_temperatures_1.append(inside_temp)
-                    #ambient_temperatures_1.append(ambient_temp)
-                    #prices_1.append(price)
+                inside_temperatures_1.append(inside_temp)
+                actions.append(action)
+                #ambient_temperatures_1.append(ambient_temp)
+                #prices_1.append(price)
 
             eval_data = pd.DataFrame()
             eval_data['Inside Temperatures'] = inside_temperatures_1
+            eval_data['Actions'] = actions
             #eval_data['Ambient Temperatures'] = ambient_temperatures_1
             #eval_data['Prices'] = prices_1
             with open(os.getcwd() + '/data/output/' + model_name + 'policy_eval.pkl', 'wb') as f:
