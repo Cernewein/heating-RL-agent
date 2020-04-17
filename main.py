@@ -93,33 +93,38 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             ambient_temperatures = []
             battery_levels = []
             sun_powers = []
+            times = []
 
 
-            #for inside_temp in np.arange(19, 25, 1):
-            #    for ambient_temp in np.arange(-10, 10, 1):
-            for price in range(0, 35):
-                for battery_level in np.arange(400,4000, 100):
-                    for sun_power in np.arange(0,500,10):
-                        state = [19, 0, sun_power, price, battery_level, 0]
-                        state = torch.tensor(state, dtype=torch.float).to(device)
-                        state = brain.normalizer.normalize(state).unsqueeze(0)
-                        action = brain.select_action(state).type(torch.FloatTensor).numpy()[1]
-                        #inside_temperatures.append(inside_temp)
-                        #ambient_temperatures.append(ambient_temp)
-                        prices.append(price)
-                        actions.append(action)
-                        battery_levels.append(battery_level)
-                        sun_powers.append(sun_power)
+            for inside_temp in np.arange(19, 25, 1):
+                print(inside_temp)
+                for ambient_temp in np.arange(-10, 10, 1):
+                    for price in range(0, 35):
+                        for battery_level in np.arange(400,4000, 100):
+                            for sun_power in np.arange(0,500,10):
+                                for time in range(0,23):
+                                    state = [inside_temp, ambient_temp, sun_power, price, battery_level, time]
+                                    state = torch.tensor(state, dtype=torch.float).to(device)
+                                    state = brain.normalizer.normalize(state).unsqueeze(0)
+                                    action = brain.select_action(state).type(torch.FloatTensor).numpy()[1]
+                                    inside_temperatures.append(inside_temp)
+                                    ambient_temperatures.append(ambient_temp)
+                                    prices.append(price)
+                                    actions.append(action)
+                                    battery_levels.append(battery_level)
+                                    sun_powers.append(sun_power)
+                                    times.append(time)
 
             eval_data = pd.DataFrame()
-            #eval_data['Inside Temperatures'] = inside_temperatures
-            #eval_data['Ambient Temperatures'] = ambient_temperatures
+            eval_data['Inside Temperatures'] = inside_temperatures
+            eval_data['Ambient Temperatures'] = ambient_temperatures
             eval_data['Battery Level'] = battery_levels
             eval_data['Prices'] = prices
             eval_data['Actions'] = actions
             eval_data['Sun Power'] = sun_powers
+            eval_data['Time'] = times
             with open(os.getcwd() + '/data/output/' + model_name + 'policy_eval.pkl', 'wb') as f:
-                pkl.dump(eval_data, f)
+             pkl.dump(eval_data, f)
 
         else:
             print('If no training should be performed, then please choose a model that should be evaluated')
