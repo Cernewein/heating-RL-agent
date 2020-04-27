@@ -14,7 +14,7 @@ import torch
 import pandas as pd
 
 
-def train_ddpg(ckpt, model_name, dynamic):
+def train_ddpg(ckpt, model_name, dynamic, save_best = True):
     env = Building(dynamic)
     scores = []
     brain = DDPGagent(mem_size=MEMORY_SIZE)
@@ -55,6 +55,14 @@ def train_ddpg(ckpt, model_name, dynamic):
                 scores.append(score)
                 break
 
+        if i_episode == 0:
+            best_score = score
+        else:
+            if score > best_score:
+                # Save current best model
+                best_score = score
+                torch.save(brain, os.getcwd() + model_name + 'model.pt')
+
         sys.stdout.write('Finished episode {} with reward {}\n'.format(i_episode, score))
 
 
@@ -78,5 +86,5 @@ def train_ddpg(ckpt, model_name, dynamic):
 
 
     # Saving the final model
-    torch.save(brain, os.getcwd() + model_name + 'model.pt')
+    #torch.save(brain, os.getcwd() + model_name + 'model.pt')
     print('Complete')
