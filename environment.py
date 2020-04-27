@@ -13,7 +13,7 @@ class Building:
     When instanciated, it initialises the inside temperature to 21°C, the envelope temperature to 20, and resets the done
     and time variables.
     """
-    def __init__(self, dynamic=False, eval=False, pv_gen=False):
+    def __init__(self, dynamic=False, eval=False, pv_gen=True):
 
         # If variable sun power, outside temperature, price should be used
         self.eval = eval
