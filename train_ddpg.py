@@ -86,5 +86,5 @@ def train_ddpg(ckpt, model_name, dynamic, save_best = True):
 
 
     # Saving the final model
-    #torch.save(brain, os.getcwd() + model_name + 'model.pt')
+    torch.save(brain, os.getcwd() + model_name + '_final_model.pt')
     print('Complete')
