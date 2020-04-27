@@ -136,7 +136,7 @@ class DDPGagent(object):
         self.actor_optimizer = optim.Adam(self.actor.parameters(),
                                     lr=lr_actor)  # optimizer for the actor network
         self.critic_optimizer = optim.Adam(self.critic.parameters(),
-                                     lr=lr_critic)  # optimizer for the critic network
+                                     lr=lr_critic, weight_decay = 1e-2)  # optimizer for the critic network
 
         # Make sure both targets are with the same weight
         self.hard_update(self.actor_target, self.actor)

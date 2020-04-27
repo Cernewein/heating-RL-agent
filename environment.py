@@ -101,7 +101,7 @@ class Building:
             pv_generation = self.sun_power * PV_EFFICIENCY * PV_SURFACE * TIME_STEP_SIZE/3600 / (1e6)
         else:
             pv_generation = 0
-        self.power_from_grid = heat_pump_power + battery_power - pv_generation
+        self.power_from_grid = np.maximum(0,heat_pump_power + battery_power - pv_generation)
 
         #self.power_from_grid = np.maximum(0, heat_pump_power + battery_power)
 

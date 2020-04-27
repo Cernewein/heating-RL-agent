@@ -17,13 +17,11 @@ import pandas as pd
 def train_ddpg(ckpt, model_name, dynamic):
     env = Building(dynamic)
     scores = []
-    temperatures = []
     brain = DDPGagent(mem_size=MEMORY_SIZE)
-    best_average_reward = -1e6
+
     for i_episode in range(NUM_EPISODES):
         # Initialize the environment.rst and state
         state = env.reset()
-        temperatures_episode = [state[0]]
         state = torch.tensor(state, dtype=torch.float).to(device)
         # Normalizing data using an online algo
         brain.normalizer.observe(state)
@@ -37,7 +35,6 @@ def train_ddpg(ckpt, model_name, dynamic):
             reward = torch.tensor([reward], dtype=torch.float, device=device)
 
             if not done:
-                temperatures_episode.append(next_state[0])
                 next_state = torch.tensor(next_state, dtype=torch.float, device=device)
                 # normalize data using an online algo
                 brain.normalizer.observe(next_state)
@@ -59,19 +56,7 @@ def train_ddpg(ckpt, model_name, dynamic):
                 break
 
         sys.stdout.write('Finished episode {} with reward {}\n'.format(i_episode, score))
-        # Soft update for target network:
 
-        #if i_episode == 50:
-        #    best_average_reward = np.mean(scores[-50:])
-        #    torch.save(brain, os.getcwd() + model_name + 'model.pt')
-        #if i_episode > 50:
-        #    current_average_reward = np.mean(scores[-50:])
-        #    if current_average_reward > best_average_reward:
-        #        best_average_reward = current_average_reward
-        #        # Saving an intermediate model if it is better than the previous one
-        #       torch.save(brain, os.getcwd() + model_name + 'model.pt')
-
-        temperatures.append(temperatures_episode)
 
     model_params = {'NUM_EPISODES': NUM_EPISODES,
                     'EPSILON': EPSILON,
@@ -88,13 +73,9 @@ def train_ddpg(ckpt, model_name, dynamic):
                     'ETA_BATTERY':ETA}
 
     scores.append(model_params)
-    temperatures.append(model_params)
     with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_rewards_dqn.pkl', 'wb') as f:
         pkl.dump(scores, f)
 
-    with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_temperatures_dqn.pkl',
-              'wb') as f:
-        pkl.dump(temperatures, f)
 
     # Saving the final model
     torch.save(brain, os.getcwd() + model_name + 'model.pt')

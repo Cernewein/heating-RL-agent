@@ -88,7 +88,8 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             print('Finished evaluation on January, evaluating the policy.')
 
             inside_temperatures = []
-            actions = []
+            battery_actions = []
+            heating_actions = []
             prices = []
             ambient_temperatures = []
             battery_levels = []
@@ -96,17 +97,19 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             times = []
 
 
-            for inside_temp in np.arange(19, 25, 1):
+            for inside_temp in np.arange(19, 21, 1):
                 print(inside_temp)
-                for ambient_temp in np.arange(-10, 10, 1):
-                    for price in range(0, 35):
-                        for battery_level in np.arange(400,4000, 100):
-                            for sun_power in np.arange(0,500,10):
+                for ambient_temp in np.arange(-5, 5, 1):
+                    for price in range(10, 55):
+                        for battery_level in np.arange(1000, 5000, 1000):
+                            for sun_power in np.arange(0,0,10):
                                 for time in range(0,23):
                                     state = [inside_temp, ambient_temp, sun_power, price, battery_level, time]
                                     state = torch.tensor(state, dtype=torch.float).to(device)
                                     state = brain.normalizer.normalize(state).unsqueeze(0)
-                                    action = brain.select_action(state).type(torch.FloatTensor).numpy()[1]
+                                    action = brain.select_action(state).type(torch.FloatTensor).numpy()
+                                    battery_actions.append(action[1])
+                                    heating_actions.append(action[0])
                                     inside_temperatures.append(inside_temp)
                                     ambient_temperatures.append(ambient_temp)
                                     prices.append(price)
@@ -120,7 +123,8 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             eval_data['Ambient Temperatures'] = ambient_temperatures
             eval_data['Battery Level'] = battery_levels
             eval_data['Prices'] = prices
-            eval_data['Actions'] = actions
+            eval_data['Battery Action'] = battery_actions
+            eval_data['Heating Action'] = heating_actions
             eval_data['Sun Power'] = sun_powers
             eval_data['Time'] = times
             with open(os.getcwd() + '/data/output/' + model_name + 'policy_eval.pkl', 'wb') as f:
