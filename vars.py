@@ -1,19 +1,19 @@
 import torch
 ### General settings
 TIME_STEP_SIZE = 10*60# How many seconds are in one of our timeteps? For example if we want every minute, set this to 60
-NUM_HOURS = 24
+NUM_HOURS = 31*24
 NUM_TIME_STEPS = int(NUM_HOURS*3600//TIME_STEP_SIZE) # A total of 12 hours computed every second
 
 ##### RL Agent parameters
-NUM_EPISODES = 4000 # Number of episodes
+NUM_EPISODES = 500 # Number of episodes
 EPSILON = 1 # For epsilon-greedy approach
-EPS_DECAY = 0.9998
+EPS_DECAY = 0.997
 LEARNING_RATE = 0.0001
 LEARNING_RATE_ACTOR = 1e-4
 LEARNING_RATE_CRITIC = 1e-3
 GAMMA = 0.99
 TARGET_UPDATE = 10
-BATCH_SIZE = 16
+BATCH_SIZE = 64
 N_ACTIONS = 2
 INPUT_DIMS = 5
 FC_1_DIMS = 300
@@ -21,7 +21,7 @@ FC_2_DIMS = 600
 FC_3_DIMS = FC_2_DIMS # If we don't want a third layer, set this to FC_2_DIMS
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 TAU = 0.001 # For soft update
-MEMORY_SIZE = 45000 # For storing approx 100 episodes worth of data
+MEMORY_SIZE = 24*31*6*499 # For storing approx 100 episodes worth of data
 
 ##### Environment parameters
 COMFORT_PENALTY = 10 # Penalty applied when going outside of "comfort" bounds
