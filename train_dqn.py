@@ -82,7 +82,6 @@ def train_dqn(ckpt,model_name,dynamic,soft):
                     'BATCH_SIZE':BATCH_SIZE,
                      'TIME_STEP_SIZE':TIME_STEP_SIZE,
                     'NUM_HOURS':NUM_HOURS,
-                    'E_PRICE':E_PRICE,
                     'COMFORT_PENALTY':COMFORT_PENALTY}
 
     scores.append(model_params)
