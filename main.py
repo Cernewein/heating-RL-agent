@@ -40,6 +40,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             brain = torch.load(ckpt,map_location=torch.device('cpu'))
             brain.epsilon = 0
             brain.eps_end = 0
+            brain.if_noise = False
             env = Building(dynamic=True, eval=True)
             inside_temperatures = [env.inside_temperature]
             ambient_temperatures = [env.ambient_temperature]

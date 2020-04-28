@@ -1,5 +1,5 @@
 from vars import *
-from utils import Normalizer, ReplayMemory, Transition
+from utils import Normalizer, ReplayMemory, Transition, OUNoise
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -94,9 +94,9 @@ class Critic(nn.Module):
 
 class DDPGagent(object):
 
-    def __init__(self, gamma= GAMMA, tau=TAU, hidden_size_actor=[300,600], hidden_size_critic=[300,600,600,600],
+    def __init__(self, gamma=GAMMA, tau=TAU, hidden_size_actor=[300,600], hidden_size_critic=[300,600,600,600],
                  num_inputs=INPUT_DIMS, action_space=np.array([[0]]), batch_size = BATCH_SIZE, mem_size =int(1e6), epsilon = EPSILON,
-                 eps_dec=EPS_DECAY, eps_end = 0.1,lr_actor = LEARNING_RATE_ACTOR, lr_critic = LEARNING_RATE_CRITIC):
+                 eps_dec=EPS_DECAY, eps_end = 0.1,lr_actor = LEARNING_RATE_ACTOR, lr_critic = LEARNING_RATE_CRITIC, random_seed = 42,if_noise = True):
         """
         Based on https://arxiv.org/abs/1509.02971 - Continuous control with deep reinforcement learning
 
@@ -144,6 +144,10 @@ class DDPGagent(object):
         self.actor_target.eval()
         self.critic_target.eval()
 
+        # Noise process
+        self.noise = OUNoise(1, random_seed)
+        self.if_noise = if_noise
+
     def hard_update(self, target, source):
         target.load_state_dict(source.state_dict())
 
@@ -159,20 +163,17 @@ class DDPGagent(object):
             target_param.data.copy_(self.tau * local_param.data + (1.0 - self.tau) * target_param.data)
 
     def select_action(self, state):
+        with torch.no_grad():
+            # t.max(1) will return largest column value of each row.
+            # second column on max result is index of where max element was
+            # found, so we pick action with the larger expected reward.
+            action = self.actor(state).numpy()
+        if self.if_noise:
+            action += self.noise.sample()
+        action = np.clip(action, 0, 1)
+        action = torch.from_numpy(action).float().to(device)
+        return action
 
-        # Acting epsilon-greedily instead of using a more advanced noise for now
-        sample = random.random()
-        self.epsilon_threshold = self.epsilon * (
-                    self.eps_dec ** self.steps_done) if self.epsilon_threshold > self.eps_end else self.eps_end
-        self.steps_done += 1
-        if sample > self.epsilon_threshold:
-            with torch.no_grad():
-                # t.max(1) will return largest column value of each row.
-                # second column on max result is index of where max element was
-                # found, so we pick action with the larger expected reward.
-                return self.actor(state)
-        else:
-            return torch.tensor([[random.random()]], dtype=torch.float).to(device)
 
     def optimize_model(self):
         if len(self.memory) < self.batch_size:
