@@ -3,6 +3,7 @@ import numpy as np
 import random
 import gurobipy as gp
 from gurobipy import GRB
+import pickle as pkl
 
 
 def heat_pump_power(phi_e, ambient_temperature):
@@ -27,7 +28,8 @@ COMFORT_PENALTY = 10
 STORAGE_CAPACITY = 4000 # Number of Watts that can be stored in the battery
 C_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the charging can provide divided by the time step size
 D_MAX = 2750 * TIME_STEP_SIZE / 3600# Power in watt that the discharging can provide divided by the time step size
-ETA = 0.95 # Charging and discharging efficiency of the battery
+ETA_CHARGING = 0.95 # Charging and discharging efficiency of the battery
+ETA_DISCHARGING = 0.95 # Charging and discharging efficiency of the battery
 MIN_STORAGE = 0.1 * STORAGE_CAPACITY
 INITIAL_STORAGE = 1000 # Set here what is initially stored inside of the battery
 SELL_PRICE_DISCOUNT = 0.9 # Percentage of buying price, so selling price = SELL_PRICE_DISCOUNT*buying_price
@@ -63,11 +65,14 @@ P = {t: prices[(t * TIME_STEP_SIZE)//3600] for t in set_T}
 x_vars = {t:m.addVar(vtype=GRB.CONTINUOUS,lb=0, ub=NOMINAL_HEAT_PUMP_POWER, name="x_{}".format(t)) for t in set_T}#
 T_i = {t:m.addVar(vtype=GRB.CONTINUOUS, name="T_{}".format(t)) for t in range(0,T)} #, lb = T_MIN, ub= T_MAX
 nu = {t:m.addVar(vtype=GRB.CONTINUOUS, name="nu_{}".format(t)) for t in range(0,T)}
-f = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=-D_MAX, ub = C_MAX, name="f_{}".format(t)) for t in set_T}
-#d = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=0, ub = D_MAX, name="d_{}".format(t)) for t in set_T}
+#f = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=-D_MAX, ub = C_MAX, name="f_{}".format(t)) for t in set_T}
+d = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=0, ub = D_MAX, name="d_{}".format(t)) for t in set_T}
+c = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=0, ub = C_MAX, name="c_{}".format(t)) for t in set_T}
+yc = {t:m.addVar(vtype=GRB.BINARY, name="yc_{}".format(t)) for t in set_T} # 1 if charging 0 otherwise
+yd = {t:m.addVar(vtype=GRB.BINARY, name="yd_{}".format(t)) for t in set_T} # 1 if discharging 0 otherwise
 B = {t:m.addVar(vtype=GRB.CONTINUOUS, lb=0, ub = STORAGE_CAPACITY,name="B_{}".format(t)) for t in range(0,T)}
 phi = {t:m.addVar(vtype=GRB.CONTINUOUS,ub = C_MAX + NOMINAL_HEAT_PUMP_POWER*TIME_STEP_SIZE//3600, name="phi_{}".format(t)) for t in set_T}
-i = {t:m.addVar(vtype=GRB.BINARY, name="i_{}".format(t)) for t in set_T} # 1 if power from grid is negative 0 otherwise
+#i = {t:m.addVar(vtype=GRB.BINARY, name="i_{}".format(t)) for t in set_T} # 1 if power from grid is negative 0 otherwise
 #Defining the constraints
 
 # <= contraints
@@ -79,12 +84,12 @@ constraints_less_eq = {t: m.addConstr(
     name='max_constraint_{}'.format(t)
 ) for t in range(0,T)}
 
-constraints_less_eq_power_from_grid = {t: m.addConstr(
-    lhs = -phi[t]/10000,
-    sense = GRB.LESS_EQUAL,
-    rhs=i[t],
-    name='power_from_grid_les_eq_{}'.format(t)
-) for t in set_T}
+#constraints_less_eq_power_from_grid = {t: m.addConstr(
+#    lhs = -phi[t]/10000,
+#    sense = GRB.LESS_EQUAL,
+#    rhs=i[t],
+#    name='power_from_grid_les_eq_{}'.format(t)
+#) for t in set_T}
 
 
 # >= contraints
@@ -96,11 +101,18 @@ constraints_greater_eq = {t: m.addConstr(
     name='min_constraint_{}'.format(t)
 ) for t in range(0,T)}
 
+#constraints_greater_eq_power_from_grid = {t: m.addConstr(
+#    lhs =1-phi[t]/10000,
+#    sense = GRB.GREATER_EQUAL,
+#    rhs= i[t],
+#    name='power_from_grid_greater_eq_{}'.format(t)
+#) for t in set_T}
+
 constraints_greater_eq_power_from_grid = {t: m.addConstr(
-    lhs =1-phi[t]/10000,
+    lhs =phi[t],
     sense = GRB.GREATER_EQUAL,
-    rhs= i[t],
-    name='power_from_grid_greater_eq_{}'.format(t)
+   rhs= 0,
+   name='power_from_grid_greater_eq_{}'.format(t)
 ) for t in set_T}
 
 constraints_greater_eq_battery = {t: m.addConstr(
@@ -130,16 +142,24 @@ constraints_eq[0] = m.addConstr(
 constraints_eq_power = {t: m.addConstr(
     lhs = phi[t],
     sense = GRB.EQUAL,
-    rhs= f[t] + x_vars[t]*TIME_STEP_SIZE/3600 - P_s[t],
+    rhs= c[t] - d[t] + x_vars[t]*TIME_STEP_SIZE/3600 - P_s[t],
     name='equality_constraint_power_{}'.format(t)
 ) for t in set_T}
+
+#constraints_eq_battery = {t: m.addConstr(
+#    lhs = B[t],
+#    sense = GRB.EQUAL,
+#    rhs= B[t-1] + f[t-1],
+#    name='equality_constraint_battery_{}'.format(t)
+#) for t in range(1,T)}
 
 constraints_eq_battery = {t: m.addConstr(
     lhs = B[t],
     sense = GRB.EQUAL,
-    rhs= B[t-1] + f[t-1],
+    rhs= B[t-1] + ETA_CHARGING*c[t-1] - 1/ETA_DISCHARGING*d[t-1],
     name='equality_constraint_battery_{}'.format(t)
 ) for t in range(1,T)}
+
 
 constraints_eq_battery[0] = m.addConstr(
     lhs = B[0],
@@ -147,17 +167,91 @@ constraints_eq_battery[0] = m.addConstr(
     rhs= 1000,
     name='equality_battery_{}'.format(0)
 )
+
+constraints_less_eq_charge_battery = {t: m.addConstr(
+    lhs = c[t]/C_MAX,
+    sense = GRB.LESS_EQUAL,
+    rhs= yc[t],
+    name='binary_charge_battery_{}'.format(t)
+) for t in set_T}
+
+#constraints_greater_eq_charge_battery = {t: m.addConstr(
+#    lhs = c[t],
+#    sense = GRB.GREATER_EQUAL,
+#    rhs= yc[t],
+#    name='binary_geq_charge_battery_{}'.format(t)
+#) for t in set_T}
+
+constraints_less_eq_discharge_battery = {t: m.addConstr(
+    lhs = d[t]/D_MAX,
+    sense = GRB.LESS_EQUAL,
+    rhs= yd[t],
+    name='binary_discharge_battery_{}'.format(t)
+) for t in set_T}
+
+#constraints_greater_eq_discharge_battery = {t: m.addConstr(
+#    lhs = d[t],
+#    sense = GRB.GREATER_EQUAL,
+#    rhs= yd[t],
+#    name='binary_geq_discharge_battery_{}'.format(t)
+#) for t in set_T}
+
+
+constraints_eq_charge_discharge = { m.addConstr(
+    lhs = yc[t] + yd[t],
+    sense = GRB.LESS_EQUAL,
+    rhs= 1,
+    name='inequality_charge_discharge_{}'.format(t)
+) for t in set_T}
+
 # Objective
 
-objective = gp.quicksum(f[t]/1e6 * TIME_STEP_SIZE/3600 + phi[t]*P[t]*(1-i[t]*SELL_PRICE_DISCOUNT)/1e6 + COMFORT_PENALTY*nu[t] for t in set_T)
+objective = gp.quicksum((c[t]+d[t])/1e6 * TIME_STEP_SIZE/3600 + phi[t]*P[t]/1e6 + COMFORT_PENALTY*nu[t] for t in set_T)
 m.ModelSense = GRB.MINIMIZE
 m.setObjective(objective)
 m.optimize()
 
 opt_df = pd.DataFrame.from_dict(x_vars, orient='index', columns= ["variable_object"])
 
+battery_state = []
+
+for t,varname in enumerate(B.values()):
+    battery_state.append(m.getVarByName(varname.VarName).x)
+
+heating_action = []
+
+for t,varname in enumerate(x_vars.values()):
+    heating_action.append(m.getVarByName(varname.VarName).x)
+
+charging_action = []
+
+for t, varname in enumerate(c.values()):
+    charging_action.append(m.getVarByName(varname.VarName).x)
+
+discharging_action = []
+
+for t, varname in enumerate(d.values()):
+    discharging_action.append(m.getVarByName(varname.VarName).x)
+
+inside_temp = []
+
+for t, varname in enumerate(T_i.values()):
+    inside_temp.append(m.getVarByName(varname.VarName).x)
+
+
 cost=0
 for t,varname in enumerate(phi.values()):
     cost+=m.getVarByName(varname.VarName).x*P[t]
 
 print(cost/1e6)
+
+final_df = pd.DataFrame()
+
+final_df['Battery State'] = battery_state
+final_df['Heating Action'] = [0]+heating_action
+final_df['Charging Action'] = [0]+charging_action
+final_df['Discharging Action'] =[0]+ discharging_action
+final_df['Inside Temperature'] = inside_temp
+
+with open('data/output/DDPG_storage/LP_output_storage.pkl', 'wb') as f:
+    pkl.dump(final_df,f)
