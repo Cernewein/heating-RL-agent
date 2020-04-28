@@ -1,5 +1,5 @@
 from vars import *
-from utils import Normalizer, ReplayMemory, Transition
+from utils import Normalizer, ReplayMemory, Transition, OUNoise
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -99,7 +99,8 @@ class DDPGagent(object):
 
     def __init__(self, gamma= GAMMA, tau=TAU, hidden_size_actor=[300,600], hidden_size_critic=[300,600,600,600],
                  num_inputs=INPUT_DIMS, action_space=np.array([[0,-1],[1,1]]), batch_size = BATCH_SIZE, mem_size =int(1e6), epsilon = EPSILON,
-                 eps_dec=EPS_DECAY, eps_end = 0.1,lr_actor = LEARNING_RATE_ACTOR, lr_critic = LEARNING_RATE_CRITIC):
+                 eps_dec=EPS_DECAY, eps_end = 0.1,lr_actor = LEARNING_RATE_ACTOR, lr_critic = LEARNING_RATE_CRITIC, add_noise = True, random_seed = 42):
+
         """
         Based on https://arxiv.org/abs/1509.02971 - Continuous control with deep reinforcement learning
 
@@ -145,8 +146,15 @@ class DDPGagent(object):
         self.actor_target.eval()
         self.critic_target.eval()
 
+        self.add_noise = add_noise
+        self.noise = OUNoise(2, random_seed)
+
+
     def hard_update(self, target, source):
         target.load_state_dict(source.state_dict())
+
+    def reset(self):
+        self.noise.reset()
 
     def soft_update(self, target, source):
         """Soft update model parameters.
@@ -162,18 +170,28 @@ class DDPGagent(object):
     def select_action(self, state):
 
         # Acting epsilon-greedily instead of using a more advanced noise for now
-        sample = random.random()
-        self.epsilon_threshold = self.epsilon * (
-                    self.eps_dec ** self.steps_done) if self.epsilon_threshold > self.eps_end else self.eps_end
-        self.steps_done += 1
-        if sample > self.epsilon_threshold:
-            with torch.no_grad():
-                # t.max(1) will return largest column value of each row.
-                # second column on max result is index of where max element was
-                # found, so we pick action with the larger expected reward.
-                return self.actor(state)[0]
-        else:
-            return torch.tensor([random.random(), random.uniform(-1,1)], dtype=torch.float).to(device)
+        #
+        with torch.no_grad():
+            # t.max(1) will return largest column value of each row.
+            # second column on max result is index of where max element was
+            # found, so we pick action with the larger expected reward.
+            actions = self.actor(state)[0]
+            if self.add_noise:
+                actions = actions.numpy()
+                actions += self.noise.sample()
+                actions[0] = np.clip(actions[0], 0,1)
+                actions[1] = np.clip(actions[0], 0, 1)
+                return torch.from_numpy(actions).float().to(device)
+            else:
+                sample = random.random()
+                self.epsilon_threshold = self.epsilon * (
+                           self.eps_dec ** self.steps_done) if self.epsilon_threshold > self.eps_end else self.eps_end
+                self.steps_done += 1
+                if sample > self.epsilon_threshold:
+                    return actions
+                else:
+                    return torch.tensor([random.random(), random.uniform(-1, 1)], dtype=torch.float).to(device)
+            return
 
     def optimize_model(self):
         if len(self.memory) < self.batch_size:

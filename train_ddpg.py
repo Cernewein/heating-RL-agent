@@ -14,13 +14,14 @@ import torch
 import pandas as pd
 
 
-def train_ddpg(ckpt, model_name, dynamic, save_best = True):
+def train_ddpg(ckpt, model_name, dynamic, noisy, save_best = True):
     env = Building(dynamic)
     scores = []
-    brain = DDPGagent(mem_size=MEMORY_SIZE)
+    brain = DDPGagent(mem_size=MEMORY_SIZE, add_noise = noisy)
 
     for i_episode in range(NUM_EPISODES):
         # Initialize the environment.rst and state
+        brain.reset()
         state = env.reset()
         state = torch.tensor(state, dtype=torch.float).to(device)
         # Normalizing data using an online algo

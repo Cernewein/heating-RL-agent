@@ -23,18 +23,17 @@ def parse_args():
     parser.add_argument("--soft", default=False,type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument("--eval", default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument("--model_type", default='DDPG')
+    parser.add_argument("--noisy", default=True, type=lambda x: (str(x).lower() == 'true'))
     return parser.parse_args()
 
 
-def run(ckpt,model_name,dynamic,soft, eval, model_type):
+def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
 
     if not eval:
         if model_type == 'DQN':
             train_dqn(ckpt, model_name, dynamic, soft)
         else:
-            train_ddpg(ckpt, model_name, dynamic)
-
-
+            train_ddpg(ckpt, model_name, dynamic, noisy)
     else:
         if ckpt:
             brain = torch.load(ckpt,map_location=torch.device('cpu'))
