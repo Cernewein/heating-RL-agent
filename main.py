@@ -23,16 +23,17 @@ def parse_args():
     parser.add_argument("--soft", default=False,type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument("--eval", default=False, type=lambda x: (str(x).lower() == 'true'))
     parser.add_argument("--model_type", default='DDPG')
+    parser.add_argument("--add_noise", default=False, type=lambda x: (str(x).lower() == 'true'))
     return parser.parse_args()
 
 
-def run(ckpt,model_name,dynamic,soft, eval, model_type):
+def run(ckpt,model_name,dynamic,soft, eval, model_type, add_noise):
 
     if not eval:
         if model_type == 'DQN':
             train_dqn(ckpt, model_name, dynamic, soft)
         else:
-            train_ddpg(ckpt, model_name, dynamic)
+            train_ddpg(ckpt, model_name, dynamic, add_noise)
 
 
     else:
@@ -40,7 +41,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type):
             brain = torch.load(ckpt,map_location=torch.device('cpu'))
             brain.epsilon = 0
             brain.eps_end = 0
-            brain.if_noise = False
+            brain.add_noise = False
             env = Building(dynamic=True, eval=True)
             inside_temperatures = [env.inside_temperature]
             ambient_temperatures = [env.ambient_temperature]

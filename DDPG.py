@@ -96,7 +96,7 @@ class DDPGagent(object):
 
     def __init__(self, gamma=GAMMA, tau=TAU, hidden_size_actor=[300,600], hidden_size_critic=[300,600,600,600],
                  num_inputs=INPUT_DIMS, action_space=np.array([[0]]), batch_size = BATCH_SIZE, mem_size =int(1e6), epsilon = EPSILON,
-                 eps_dec=EPS_DECAY, eps_end = 0.1,lr_actor = LEARNING_RATE_ACTOR, lr_critic = LEARNING_RATE_CRITIC, random_seed = 42,if_noise = True):
+                 eps_dec=EPS_DECAY, eps_end = 0.1,lr_actor = LEARNING_RATE_ACTOR, lr_critic = LEARNING_RATE_CRITIC, random_seed = 42,add_noise = True):
         """
         Based on https://arxiv.org/abs/1509.02971 - Continuous control with deep reinforcement learning
 
@@ -146,7 +146,7 @@ class DDPGagent(object):
 
         # Noise process
         self.noise = OUNoise(1, random_seed)
-        self.if_noise = if_noise
+        self.add_noise = add_noise
 
     def hard_update(self, target, source):
         target.load_state_dict(source.state_dict())
@@ -167,12 +167,21 @@ class DDPGagent(object):
             # t.max(1) will return largest column value of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
-            action = self.actor(state).numpy()
-        if self.if_noise:
-            action += self.noise.sample()
-        action = np.clip(action, 0, 1)
-        action = torch.from_numpy(action).float().to(device)
-        return action
+            action = self.actor(state)
+            if self.add_noise:
+                action = action.cpu().item()
+                action += self.noise.sample()
+                action = np.clip(action, 0,1)
+                return torch.from_numpy(action).float().to(device)
+            else:
+                sample = random.random()
+                self.epsilon_threshold = self.epsilon * (
+                           self.eps_dec ** self.steps_done) if self.epsilon_threshold > self.eps_end else self.eps_end
+                self.steps_done += 1
+                if sample > self.epsilon_threshold:
+                    return action
+                else:
+                    return torch.tensor([random.random(), random.uniform(-1, 1)], dtype=torch.float).to(device)
 
 
     def optimize_model(self):

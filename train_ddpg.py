@@ -14,11 +14,11 @@ import torch
 import pandas as pd
 
 
-def train_ddpg(ckpt, model_name, dynamic):
+def train_ddpg(ckpt, model_name, dynamic, add_noise):
     env = Building(dynamic)
     scores = []
     temperatures = []
-    brain = DDPGagent(mem_size=MEMORY_SIZE)
+    brain = DDPGagent(mem_size=MEMORY_SIZE, add_noise=add_noise)
     best_average_reward = -1e6
     for i_episode in range(NUM_EPISODES):
         # Initialize the environment.rst and state
