@@ -177,7 +177,7 @@ class DDPGagent(object):
             # found, so we pick action with the larger expected reward.
             actions = self.actor(state)[0]
             if self.add_noise:
-                actions = actions.numpy()
+                actions = actions.cpu().numpy()
                 actions += self.noise.sample()
                 actions[0] = np.clip(actions[0], 0,1)
                 actions[1] = np.clip(actions[0], 0, 1)
