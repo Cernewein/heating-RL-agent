@@ -28,13 +28,15 @@ def train_ddpg(ckpt, model_name, dynamic, noisy, save_best = True):
         brain.normalizer.observe(state)
         state = brain.normalizer.normalize(state).unsqueeze(0)
         score = 0
+        battery_charging = 0 # Number of times the battery is charged during an episode
         for t in count():
             # Select and perform an action
             action = brain.select_action(state).type(torch.FloatTensor)
+            if action.numpy()[1] > 0:
+                battery_charging += 1
             next_state, reward, done = env.step(action.numpy())
             score += reward
             reward = torch.tensor([reward], dtype=torch.float, device=device)
-
             if not done:
                 next_state = torch.tensor(next_state, dtype=torch.float, device=device)
                 # normalize data using an online algo
@@ -59,7 +61,7 @@ def train_ddpg(ckpt, model_name, dynamic, noisy, save_best = True):
         if i_episode == 0:
             best_score = score
         else:
-            if score > best_score:
+            if score > best_score & battery_charging >= 10:
                 # Save current best model
                 best_score = score
                 torch.save(brain, os.getcwd() + model_name + 'model.pt')

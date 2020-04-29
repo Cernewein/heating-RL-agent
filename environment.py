@@ -38,7 +38,7 @@ class Building:
         ### Based on the same day, choose the sun irradiation for the episode
 
         self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                                header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,3]
+                                                header=3).iloc[self.random_day:self.random_day+NUM_HOURS+1,3] * 3
         self.sun_power = self.sun_powers[self.random_day]
 
         ### Based on the same day, choose the hourly prices for the episode
@@ -164,7 +164,7 @@ class Building:
 
         ## Resetting the sun power
         self.sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                      header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 3]
+                                      header=3).iloc[self.random_day:self.random_day + NUM_HOURS + 1, 3] * 3
         self.sun_power = self.sun_powers[self.random_day]
 
         ## Resetting the prices
