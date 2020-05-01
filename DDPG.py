@@ -181,7 +181,7 @@ class DDPGagent(object):
                 if sample > self.epsilon_threshold:
                     return action
                 else:
-                    return torch.tensor([random.random(), random.uniform(-1, 1)], dtype=torch.float).to(device)
+                    return torch.tensor([[random.random()]], dtype=torch.float).to(device)
 
 
     def optimize_model(self):
