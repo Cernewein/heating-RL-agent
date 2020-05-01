@@ -47,7 +47,7 @@ ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.53
                                                 header=3).iloc[initial_day*24:initial_day*24+NUM_HOURS+1,2].reset_index(drop=True)
 
 sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                                header=3).iloc[initial_day*24:initial_day*24+NUM_HOURS+1,3].reset_index(drop=True)
+                                                header=3).iloc[initial_day*24:initial_day*24+NUM_HOURS+1,3].reset_index(drop=True) * 3
 
 prices = pd.read_csv('data/environment/2014_DK2_spot_prices.csv',
                                   header = 0).iloc[initial_day*24:initial_day*24+NUM_HOURS+1,1].reset_index(drop=True)
@@ -253,5 +253,5 @@ final_df['Charging Action'] = [0]+charging_action
 final_df['Discharging Action'] =[0]+ discharging_action
 final_df['Inside Temperature'] = inside_temp
 
-with open('data/output/DDPG_storage/LP_output_storage.pkl', 'wb') as f:
+with open('data/output/DDPG_storage/LP_output_sun_storage.pkl', 'wb') as f:
     pkl.dump(final_df,f)

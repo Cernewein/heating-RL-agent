@@ -46,6 +46,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
             storage_state = [env.storage]
             prices = [env.price]
             power_from_grid = [env.power_from_grid]
+            sun_power = [env.sun_power]
             actions = [[0,0]]
             rewards=[0]
             print('Starting evaluation of the model')
@@ -63,6 +64,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
                 inside_temperatures.append(env.inside_temperature)
                 ambient_temperatures.append(env.ambient_temperature)
                 storage_state.append(env.storage)
+                sun_power.append(env.sun_power)
                 power_from_grid.append(env.power_from_grid)
                 if not done:
                     next_state = torch.tensor(next_state, dtype=torch.float, device=device)
@@ -82,6 +84,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
             eval_data['Rewards'] = rewards
             eval_data['Storage'] = storage_state
             eval_data['Power'] = power_from_grid
+            eval_data['Sun Power'] = sun_power
             with open(os.getcwd() + '/data/output/' + model_name + '_eval.pkl', 'wb') as f:
                 pkl.dump(eval_data, f)
 
@@ -102,7 +105,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
                 for ambient_temp in np.arange(-5, 5, 1):
                     for price in range(10, 55):
                         for battery_level in np.arange(1000, 5000, 1000):
-                            for sun_power in np.arange(0,0,10):
+                            for sun_power in np.arange(0,600,10):
                                 for time in range(0,23):
                                     state = [inside_temp, ambient_temp, sun_power, price, battery_level, time]
                                     state = torch.tensor(state, dtype=torch.float).to(device)

@@ -61,7 +61,7 @@ def train_ddpg(ckpt, model_name, dynamic, noisy, save_best = True):
         if i_episode == 0:
             best_score = score
         else:
-            if score > best_score & battery_charging >= 10:
+            if (score > best_score) and (battery_charging >= 10):
                 # Save current best model
                 best_score = score
                 torch.save(brain, os.getcwd() + model_name + 'model.pt')
