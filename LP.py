@@ -3,6 +3,7 @@ import numpy as np
 import random
 import gurobipy as gp
 from gurobipy import GRB
+import pickle as pkl
 
 
 def heat_pump_power(phi_e, ambient_temperature):
@@ -96,7 +97,19 @@ m.ModelSense = GRB.MINIMIZE
 m.setObjective(objective)
 m.optimize()
 
-opt_df = pd.DataFrame.from_dict(x_vars, orient='index', columns= ["variable_object"])
+#opt_df = pd.DataFrame.from_dict(x_vars, orient='index', columns= ["variable_object"])
+
+LP_solution = pd.DataFrame()
+
+inside_temperatures = []
+for t,varname in enumerate(T_i.values()):
+    inside_temperatures.append(m.getVarByName(varname.VarName).x)
+
+LP_solution['Inside Temperature'] = inside_temperatures
+
+with open('data/output/DDPG/LP_output.pkl', 'wb') as f:
+    pkl.dump(LP_solution,f)
+
 
 power=0
 for t,varname in enumerate(x_vars.values()):
