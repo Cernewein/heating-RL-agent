@@ -34,4 +34,4 @@ virtualenv env
 python3 -m pip install --no-cache-dir -r requirement.txt
 
 # running script
-python3 main.py python main.py --eval=True --model_name=DQN_price --ckpt=data/output/DQN-Dyn-Price/heating-RL-agent2906093model.pt
+python3 main.py python main.py --dynamic=True --model_name=DQN_more_actions

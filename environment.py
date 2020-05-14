@@ -70,8 +70,9 @@ class Building:
 
         #delta_envelope = 1/(R_IE*C_E) * (self.inside_temperature - self.envelope_temperature) + 1/(R_EA*C_E) * (T_AMBIENT - self.envelope_temperature)
 
+        chosen_action = HEATING_SETTINGS[int(action)]
         delta = 1 / (R_IA * C_I) * (self.ambient_temperature - self.inside_temperature) + \
-                action * self.heat_pump_power(NOMINAL_HEAT_PUMP_POWER)/C_I + A_w*self.sun_power/C_I
+                self.heat_pump_power(chosen_action*NOMINAL_HEAT_PUMP_POWER)/C_I + A_w*self.sun_power/C_I
         #self.envelope_temperature += delta_envelope* TIME_STEP_SIZE
         self.inside_temperature += delta * TIME_STEP_SIZE
 
@@ -88,7 +89,7 @@ class Building:
         if self.time >= NUM_TIME_STEPS:
             self.done = True
 
-        return [self.inside_temperature,self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done #self.ambient_temperature, self.sun_power, self.price , self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done
+        return [self.inside_temperature,self.ambient_temperature, self.sun_power, self.price ,self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done #self.ambient_temperature, self.sun_power, self.price , self.time % int(24*3600//TIME_STEP_SIZE)], r, self.done
 
 
     def reward(self,action):
@@ -141,5 +142,5 @@ class Building:
         self.done = False
         self.time = 0
 
-        return [self.inside_temperature,self.time]#self.ambient_temperature,self.sun_power,self.price,self.time]
+        return [self.inside_temperature,self.ambient_temperature, self.sun_power, self.price, self.time]#self.ambient_temperature,self.sun_power,self.price,self.time]
 
