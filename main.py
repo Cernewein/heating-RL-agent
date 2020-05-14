@@ -96,7 +96,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
             for inside_temp in np.arange(19, 22, 1/10):
                 for ambient_temp in np.arange(-5, 5, 1/10):
                     for price in range(0, 60):
-                        state = [inside_temp, ambient_temp,0, price, 12]
+                        state = [inside_temp, ambient_temp,0, price]
                         state = torch.tensor(state, dtype=torch.float).to(device)
                         state = brain.normalizer.normalize(state).unsqueeze(0)
                         action = brain.select_action(state).type(torch.FloatTensor).item()
@@ -104,8 +104,6 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
                         ambient_temperatures.append(ambient_temp)
                         prices.append(price)
                         actions.append(action)
-
-
 
             eval_data = pd.DataFrame()
             eval_data['Inside Temperatures'] = inside_temperatures

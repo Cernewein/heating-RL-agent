@@ -5,7 +5,7 @@ NUM_HOURS = 31*24
 NUM_TIME_STEPS = int(NUM_HOURS*3600//TIME_STEP_SIZE) # A total of 12 hours computed every second
 
 ##### RL Agent parameters
-NUM_EPISODES = 500 # Number of episodes
+NUM_EPISODES = 1000 # Number of episodes
 EPSILON = 1 # For epsilon-greedy approach
 EPS_DECAY = 0.997
 LEARNING_RATE = 0.0001
@@ -15,7 +15,7 @@ GAMMA = 0.99
 TARGET_UPDATE = 10
 BATCH_SIZE = 64
 N_ACTIONS = 2
-INPUT_DIMS = 5
+INPUT_DIMS = 4
 FC_1_DIMS = 300
 FC_2_DIMS = 600
 FC_3_DIMS = FC_2_DIMS # If we don't want a third layer, set this to FC_2_DIMS
@@ -25,7 +25,7 @@ MEMORY_SIZE = 24*31*6*499 # For storing approx 100 episodes worth of data
 
 ##### Environment parameters
 COMFORT_PENALTY = 10 # Penalty applied when going outside of "comfort" bounds
-T_MIN = 19.5 # Minimum temperature that should be achieved inside of the building
+T_MIN = 19 # Minimum temperature that should be achieved inside of the building
 T_MAX = 22.5 # Maximum temperature that should be achieved inside of the building
 C_I = 2.07*3.6e6 # Based on Emil Larsen's paper - heat capacity of the building
 C_E = 3.24*3.6e6 # Based on Emil Larsen's paper - heat capacity of the building
