@@ -77,7 +77,7 @@ class Building:
         self.inside_temperature += delta * TIME_STEP_SIZE
 
 
-        r = self.reward(action)
+        r = self.reward(chosen_action)
         self.time +=1
 
         if self.dynamic:
