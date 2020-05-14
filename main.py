@@ -93,7 +93,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
             times = []
             suns = []
 
-            for inside_temp in np.arange(19, 22, 1/10):
+            for inside_temp in np.arange(19, 23, 1/10):
                 for ambient_temp in np.arange(-5, 5, 1/10):
                     for price in range(0, 60):
                         state = [inside_temp, ambient_temp,0, price]
