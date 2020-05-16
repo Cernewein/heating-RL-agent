@@ -83,16 +83,17 @@ def train_ddpg(ckpt, model_name, dynamic, add_noise):
                     'TIME_STEP_SIZE': TIME_STEP_SIZE,
                     'NUM_HOURS': NUM_HOURS,
                     'COMFORT_PENALTY': COMFORT_PENALTY,
-                    'MEMORY_SIZE':MEMORY_SIZE}
+                    'MEMORY_SIZE':MEMORY_SIZE,
+                    'PRICE_PENALTY': PRICE_PENALTY}
 
     scores.append(model_params)
     temperatures.append(model_params)
     with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_rewards_dqn.pkl', 'wb') as f:
         pkl.dump(scores, f)
 
-    with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_temperatures_dqn.pkl',
-              'wb') as f:
-        pkl.dump(temperatures, f)
+    #with open(os.getcwd() + '/data/output/' + model_name + '_dynamic_' + str(dynamic) + '_temperatures_dqn.pkl',
+     #         'wb') as f:
+     #   pkl.dump(temperatures, f)
 
     # Saving the final model
     torch.save(brain, os.getcwd() + model_name + 'model.pt')
