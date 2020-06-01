@@ -107,7 +107,7 @@ def run(ckpt,model_name,dynamic,soft, eval, model_type, noisy):
                         for battery_level in np.arange(1000, 5000, 1000):
                             for sun_power in np.arange(0,600,10):
                                 for time in range(0,23):
-                                    state = [inside_temp, ambient_temp, sun_power, price, battery_level, time]
+                                    state = [inside_temp, ambient_temp, sun_power, price, battery_level] #, time
                                     state = torch.tensor(state, dtype=torch.float).to(device)
                                     state = brain.normalizer.normalize(state).unsqueeze(0)
                                     action = brain.select_action(state).type(torch.FloatTensor).numpy()
