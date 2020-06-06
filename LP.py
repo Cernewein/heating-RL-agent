@@ -3,6 +3,7 @@ import numpy as np
 import random
 import gurobipy as gp
 from gurobipy import GRB
+import pickle as pkl
 
 
 def heat_pump_power(phi_e, ambient_temperature):
@@ -49,8 +50,8 @@ P = {t: prices[(t * TIME_STEP_SIZE)//3600] for t in set_T}
 
 x_vars = {t:m.addVar(vtype=GRB.BINARY, name="x_{}".format(t)) for t in set_T}#
 T_i = {t:m.addVar(vtype=GRB.CONTINUOUS, name="T_{}".format(t)) for t in range(0,T)} #, lb = T_MIN, ub= T_MAX
-nu = {t:m.addVar(vtype=GRB.CONTINUOUS, name="nu_{}".format(t)) for t in range(0,T)}
-
+nu_plus = {t:m.addVar(vtype=GRB.CONTINUOUS, name="nu_plus_{}".format(t), lb=0) for t in range(0,T)}
+nu_minus = {t:m.addVar(vtype=GRB.CONTINUOUS, name="nu_minus_{}".format(t), lb=0) for t in range(0,T)}
 
 #Defining the constraints
 
@@ -59,7 +60,7 @@ nu = {t:m.addVar(vtype=GRB.CONTINUOUS, name="nu_{}".format(t)) for t in range(0,
 constraints_less_eq = {t: m.addConstr(
     lhs = T_MIN,
     sense = GRB.LESS_EQUAL,
-    rhs=T_i[t] + nu[t],
+    rhs=T_i[t] + nu_plus[t],
     name='max_constraint_{}'.format(t)
 ) for t in range(0,T)}
 
@@ -68,7 +69,7 @@ constraints_less_eq = {t: m.addConstr(
 constraints_greater_eq = {t: m.addConstr(
     lhs = T_MAX,
     sense = GRB.GREATER_EQUAL,
-    rhs=T_i[t] - nu[t],
+    rhs=T_i[t] - nu_minus[t],
     name='min_constraint_{}'.format(t)
 ) for t in range(0,T)}
 
@@ -91,12 +92,22 @@ constraints_eq[0] = m.addConstr(
 )
 # Objective
 
-objective = gp.quicksum(x_vars[t]*P[t]*NOMINAL_HEAT_PUMP_POWER/1e6*TIME_STEP_SIZE/3600 + COMFORT_PENALTY*nu[t] for t in set_T)
+objective = gp.quicksum(x_vars[t]*P[t]*NOMINAL_HEAT_PUMP_POWER/1e3*TIME_STEP_SIZE/3600 + COMFORT_PENALTY*(nu_plus[t] + nu_minus[t]) for t in set_T)
 m.ModelSense = GRB.MINIMIZE
 m.setObjective(objective)
 m.optimize()
 
-opt_df = pd.DataFrame.from_dict(x_vars, orient='index', columns= ["variable_object"])
+#opt_df = pd.DataFrame.from_dict(x_vars, orient='index', columns= ["variable_object"])
+LP_solution = pd.DataFrame()
+
+inside_temperatures = []
+for t,varname in enumerate(T_i.values()):
+    inside_temperatures.append(m.getVarByName(varname.VarName).x)
+
+LP_solution['Inside Temperature'] = inside_temperatures
+
+with open('data/output/DQN-Dyn-Price/LP_output.pkl', 'wb') as f:
+    pkl.dump(LP_solution,f)
 
 cost=0
 power=0
@@ -104,5 +115,5 @@ for t,varname in enumerate(x_vars.values()):
     cost+=m.getVarByName(varname.VarName).x*P[t]
     power += m.getVarByName(varname.VarName).x * TIME_STEP_SIZE/3600 * 2000
 
-print(cost*NOMINAL_HEAT_PUMP_POWER/1e6*TIME_STEP_SIZE/3600)
+print(cost*NOMINAL_HEAT_PUMP_POWER/1e3*TIME_STEP_SIZE/3600)
 print(power)
