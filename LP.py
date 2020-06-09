@@ -47,7 +47,7 @@ ambient_temperatures = pd.read_csv('data/environment/ninja_weather_55.6838_12.53
                                                 header=3).iloc[initial_day*24:initial_day*24+NUM_HOURS+1,2].reset_index(drop=True)
 
 sun_powers = pd.read_csv('data/environment/ninja_weather_55.6838_12.5354_uncorrected.csv',
-                                                header=3).iloc[initial_day*24:initial_day*24+NUM_HOURS+1,3].reset_index(drop=True) 
+                                                header=3).iloc[initial_day*24:initial_day*24+NUM_HOURS+1,3].reset_index(drop=True)*3
 
 prices = pd.read_csv('data/environment/2014_DK2_spot_prices.csv',
                                   header = 0).iloc[initial_day*24:initial_day*24+NUM_HOURS+1,1].reset_index(drop=True)
