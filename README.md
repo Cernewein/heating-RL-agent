@@ -3,8 +3,8 @@
 
 This repo implements a deep reinforcement learning based home energy management system. It features both a Deep Q-Learning algorithm as well as a Deep Deterministic Policy Gradient solution.
 It has been developped for my master thesis at the Technical University of Denmark.
-Built with <img src="https://github.com/PyTorchLightning/pytorch-lightning/blob/master/docs/source/_static/images/icon.svg" 
-         alt="pytorch lightning" width="40" height="40" />
+Built with Pytorch <img src="https://www.vectorlogo.zone/logos/pytorch/pytorch-icon.svg" 
+         alt="pytorch" width="40" height="40" />.
 
 A paper based on the work done during the master thesis has been published https://doi.org/10.1145/3427773.3427862
 
