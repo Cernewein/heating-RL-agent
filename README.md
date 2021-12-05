@@ -32,7 +32,7 @@ This house is subject to following elements :
 * Varying sun radiation
 * Varying electricity prices
 
-![](/images/TI.PNG)
+![](/images/Ti.PNG)
 
 # Action space for the RL agent
 
