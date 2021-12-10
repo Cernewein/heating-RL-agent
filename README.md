@@ -34,24 +34,41 @@ This house is subject to following elements :
 
 ![](/images/Ti.PNG)
 
-# Action space for the RL agent
+The goal is to control the inside temperature while remaining within comfort bounds and minimizing heating costs.
+
+# RL formulation
 
 The agent can make use of following elements :
-* The heat pump (continuous action between 0 W and P_max W at a certain time step, where P_max is the nominal heat pump power)
-* The battery (two continuous variables modelling the charging or discharging power at a certain time step)
-
-# Reward
+* The heat pump (continuous action between 0 and 1 translated into an electrical power between 0 W and P_max W at a certain time step, where P_max is the nominal heat pump power)
+* The battery (one continuous variable modelling the charging or discharging power at a certain time step)
 
 The agent needs to control the inside temperature of the house under following contraints :
 
 * Keep within the temperature comfort bounds defined for the house
 * Minimize the total cost of electricity
+* Don't overuse the battery
 
 Thus, the reward is modelled at each time step as the sum of :
 
 * Negative price paid for the electricity used
 * Negative reward proportional to the severity of the temperature bound trespassing
+* Negative reward for battery activations
 
+![](/images/RLFormulation.PNG)
+
+The variables are the following :
+* $T^a$ is the exterior temperature
+* $T^i$ is the inside temperature
+* $\Phi^s$ is the sun radiation
+* soe is the state of energy of the battery
+* $p$ is the electricity price
+* TOD is the time of day
+* $\phi$ is the electricity power
+* $\lambda_P$ is a sensitivity variable for the power cost
+* $\lambda_T$ is a sensitivity variable for the comfort disutility cost
+* $\Psi$ is a sensitivity variable for the battery depreciation
+* $\Delta_t$ is the time step size
+* $\nu$ is the temperature trespassing of the upper or lower comfort bounds
 
 # Data
 
